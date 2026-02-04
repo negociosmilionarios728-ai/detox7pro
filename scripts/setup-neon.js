@@ -7,6 +7,9 @@ const { Pool } = pg;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+console.log('[v0] DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+console.log('[v0] Current directory:', __dirname);
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -18,8 +21,20 @@ async function setupDatabase() {
     console.log('🚀 Iniciando setup do banco de dados Neon...');
     
     try {
-        // Ler arquivo SQL
-        const sqlFile = path.join(__dirname, 'init-db.sql');
+        // Ler arquivo SQL - tentar múltiplos caminhos
+        let sqlFile = path.join(__dirname, 'init-db.sql');
+        
+        if (!fs.existsSync(sqlFile)) {
+            // Tentar um nível acima
+            sqlFile = path.join(__dirname, '..', 'scripts', 'init-db.sql');
+        }
+        
+        console.log('[v0] Procurando arquivo SQL em:', sqlFile);
+        
+        if (!fs.existsSync(sqlFile)) {
+            throw new Error(`Arquivo SQL não encontrado em ${sqlFile}`);
+        }
+        
         const sql = fs.readFileSync(sqlFile, 'utf8');
 
         // Executar cada comando SQL separado por ;
