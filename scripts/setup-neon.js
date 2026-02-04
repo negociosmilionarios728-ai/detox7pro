@@ -21,21 +21,38 @@ async function setupDatabase() {
     console.log('🚀 Iniciando setup do banco de dados Neon...');
     
     try {
-        // Ler arquivo SQL - tentar múltiplos caminhos
-        let sqlFile = path.join(__dirname, 'init-db.sql');
-        
-        if (!fs.existsSync(sqlFile)) {
-            // Tentar um nível acima
-            sqlFile = path.join(__dirname, '..', 'scripts', 'init-db.sql');
-        }
-        
-        console.log('[v0] Procurando arquivo SQL em:', sqlFile);
-        
-        if (!fs.existsSync(sqlFile)) {
-            throw new Error(`Arquivo SQL não encontrado em ${sqlFile}`);
-        }
-        
-        const sql = fs.readFileSync(sqlFile, 'utf8');
+        // SQL statements embedded diretamente
+        const sql = `
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS generated_passwords (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    password_text VARCHAR(255) NOT NULL,
+    category VARCHAR(50),
+    length INTEGER DEFAULT 16,
+    uses_uppercase BOOLEAN DEFAULT true,
+    uses_lowercase BOOLEAN DEFAULT true,
+    uses_numbers BOOLEAN DEFAULT true,
+    uses_special BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
+
+CREATE INDEX IF NOT EXISTS idx_generated_passwords_user_id ON generated_passwords(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_generated_passwords_created_at ON generated_passwords(created_at);
+        `;
 
         // Executar cada comando SQL separado por ;
         const commands = sql
