@@ -1,0 +1,216 @@
+.progress-container {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.progress-header {
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg) 0;
+}
+
+.progress-main {
+    padding: var(--spacing-2xl) 0;
+}
+
+.progress-title-section {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.progress-title-section h1 {
+    font-size: 2.5rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+}
+
+.motivation-message {
+    font-size: 1.25rem;
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.progress-summary {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.summary-stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-text {
+    display: block;
+    font-size: 1rem;
+    color: var(--gray-600);
+}
+
+.progress-bar-large {
+    height: 2rem;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.day-item {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.day-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-green);
+}
+
+.day-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-600);
+}
+
+.day-item.completed {
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+.day-item.completed .day-number {
+    color: var(--white);
+}
+
+.check-icon {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    background: var(--white);
+    color: var(--primary-green);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.day-item.current {
+    border-color: #f59e0b;
+    border-width: 3px;
+    animation: pulse 2s infinite;
+}
+
+.current-badge {
+    position: absolute;
+    bottom: 0.25rem;
+    background: #f59e0b;
+    color: var(--white);
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+}
+
+.milestones-section {
+    margin-top: var(--spacing-2xl);
+}
+
+.milestones-section h2 {
+    font-size: 2rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.milestones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.milestone-item {
+    text-align: center;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--secondary-green) 0%, var(--white) 100%);
+    border: 2px solid var(--primary-green);
+}
+
+.milestone-icon {
+    margin: 0 auto var(--spacing-md);
+    display: block;
+    color: var(--primary-green);
+}
+
+.milestone-item h3 {
+    font-size: 1.25rem;
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-sm);
+}
+
+.milestone-item p {
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.milestone-item.champion {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+.milestone-item.champion h3 {
+    color: #f59e0b;
+}
+
+@media (max-width: 768px) {
+    .progress-title-section h1 {
+        font-size: 2rem;
+    }
+
+    .summary-stats {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+
+    .days-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: var(--spacing-sm);
+    }
+
+    .day-number {
+        font-size: 1.25rem;
+    }
+}

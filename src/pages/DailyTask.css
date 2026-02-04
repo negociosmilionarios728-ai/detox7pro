@@ -1,0 +1,157 @@
+.daily-task-container {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.task-header {
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg) 0;
+}
+
+.task-main {
+    padding: var(--spacing-2xl) 0;
+}
+
+.task-title-section {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.day-number {
+    display: inline-block;
+    background: var(--primary-green);
+    color: var(--white);
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.task-title-section h1 {
+    font-size: 2rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+}
+
+.objective {
+    font-size: 1.125rem;
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-lg);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.time-badge {
+    font-size: 1rem;
+}
+
+.task-content {
+    display: grid;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+}
+
+.section-icon {
+    margin-right: 12px;
+    color: var(--primary-green);
+}
+
+.exercise-card {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+}
+
+.exercise-description {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--gray-700);
+}
+
+.recipe-card {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.recipe-type-badge {
+    font-size: 0.875rem;
+}
+
+.recipe-name {
+    font-size: 1.75rem;
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+}
+
+.recipe-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.recipe-section h4 {
+    font-size: 1.125rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.recipe-section p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--gray-700);
+}
+
+.recipe-section.benefits {
+    background: var(--secondary-green);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--primary-green);
+}
+
+.task-actions {
+    text-align: center;
+}
+
+.btn-complete {
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+    min-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .task-title-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .recipe-name {
+        font-size: 1.5rem;
+    }
+
+    .btn-complete {
+        min-width: 100%;
+    }
+}

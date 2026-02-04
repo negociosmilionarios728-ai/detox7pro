@@ -1,0 +1,343 @@
+.calorie-analysis-container {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.analysis-header {
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg) 0;
+}
+
+.analysis-main {
+    padding: var(--spacing-2xl) 0;
+}
+
+.analysis-title-section {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.analysis-title-section h1 {
+    font-size: 2.5rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-sm);
+}
+
+.analysis-title-section p {
+    font-size: 1.125rem;
+    color: var(--gray-600);
+}
+
+.analysis-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Upload Section */
+.upload-section {
+    text-align: center;
+    padding: var(--spacing-2xl);
+}
+
+.upload-icon-wrapper,
+.analyze-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.upload-icon,
+.analyze-icon {
+    color: var(--primary-green);
+}
+
+.upload-section h2 {
+    font-size: 1.75rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+}
+
+.upload-description {
+    font-size: 1.125rem;
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-2xl);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.upload-btn {
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+    margin-bottom: var(--spacing-2xl);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-tips {
+    background: var(--secondary-green);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.upload-tips h4 {
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-md);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.upload-tips ul {
+    list-style: none;
+    padding: 0;
+}
+
+.upload-tips li {
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-sm);
+    padding-left: var(--spacing-lg);
+    position: relative;
+}
+
+.upload-tips li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--primary-green);
+    font-weight: bold;
+}
+
+/* Analysis Section */
+.analysis-section {
+    display: grid;
+    gap: var(--spacing-xl);
+}
+
+.image-preview-card {
+    text-align: center;
+}
+
+.image-preview-card h3 {
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.25rem;
+}
+
+.preview-image {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.analyze-card {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.analyze-card h3 {
+    font-size: 1.5rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+}
+
+.analyze-card p {
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-xl);
+}
+
+.analyze-btn {
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+    min-width: 250px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner-small {
+    animation: spin 1s linear infinite;
+    margin-right: var(--spacing-sm);
+}
+
+/* Results Section */
+.results-card {
+    padding: var(--spacing-2xl);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--gray-100);
+}
+
+.result-header h3 {
+    font-size: 1.5rem;
+    color: var(--gray-800);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.confidence-badge {
+    font-size: 0.875rem;
+}
+
+.food-identified {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.food-identified h4 {
+    font-size: 1rem;
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+}
+
+.food-name {
+    font-size: 1.75rem;
+    color: var(--primary-green);
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.portions {
+    color: var(--gray-500);
+    font-size: 1rem;
+}
+
+.calories-highlight {
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-light) 100%);
+    color: var(--white);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: var(--shadow-lg);
+}
+
+.calorie-number {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: var(--spacing-sm);
+}
+
+.calorie-label {
+    font-size: 1.125rem;
+    opacity: 0.95;
+    font-weight: 600;
+}
+
+.nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.nutrition-item {
+    text-align: center;
+    background: var(--gray-50);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-normal);
+}
+
+.nutrition-item:hover {
+    background: var(--secondary-green);
+    transform: translateY(-3px);
+}
+
+.nutrition-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.nutrition-icon {
+    color: var(--primary-green);
+}
+
+.nutrition-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-xs);
+}
+
+.nutrition-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 600;
+}
+
+.result-disclaimer {
+    background: #fef3c7;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid #f59e0b;
+    margin-bottom: var(--spacing-xl);
+}
+
+.result-disclaimer p {
+    color: #92400e;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.result-disclaimer strong {
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .analysis-title-section h1 {
+        font-size: 2rem;
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+    }
+
+    .nutrition-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .calorie-number {
+        font-size: 3rem;
+    }
+
+    .result-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .nutrition-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-btn,
+    .analyze-btn {
+        width: 100%;
+    }
+}
