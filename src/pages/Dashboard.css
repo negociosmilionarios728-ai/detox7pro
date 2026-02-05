@@ -1,0 +1,235 @@
+.dashboard-container {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.dashboard-header {
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg) 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-small {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.logo-small .logo-icon {
+    font-size: 1.5rem;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary-green);
+}
+
+.dashboard-main {
+    padding: var(--spacing-2xl) 0;
+}
+
+.welcome-section {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.welcome-section h1 {
+    font-size: 2.5rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
+}
+
+.quote {
+    font-size: 1.125rem;
+    color: var(--primary-green);
+    font-weight: 600;
+}
+
+.progress-card {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.progress-header h2 {
+    font-size: 1.5rem;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.day-badge {
+    font-size: 1rem;
+}
+
+.progress-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-green);
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+.progress-bar-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.progress-bar-container .progress-bar {
+    flex: 1;
+    height: 1.5rem;
+}
+
+.progress-percentage {
+    font-weight: 700;
+    color: var(--primary-green);
+    font-size: 1.125rem;
+    min-width: 50px;
+    text-align: right;
+}
+
+.action-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.action-card {
+    text-align: center;
+    cursor: pointer;
+    padding: var(--spacing-2xl);
+    will-change: transform;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.action-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    height: 64px;
+    width: 64px;
+    margin: 0 auto var(--spacing-md);
+    background: var(--secondary-green);
+    border-radius: 50%;
+    will-change: background;
+}
+
+.action-card:hover .action-icon-wrapper {
+    background: var(--primary-green);
+}
+
+.action-icon {
+    color: var(--primary-green);
+}
+
+.action-card:hover .action-icon {
+    color: var(--white);
+}
+
+.milestone-icon {
+    margin-bottom: var(--spacing-md);
+}
+
+.section-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.action-card h3 {
+    font-size: 1.25rem;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-sm);
+}
+
+.action-card p {
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-lg);
+}
+
+.action-card .btn {
+    width: 100%;
+}
+
+.milestone-card {
+    text-align: center;
+    background: linear-gradient(135deg, var(--secondary-green) 0%, var(--white) 100%);
+    border: 2px solid var(--primary-green);
+}
+
+.milestone-card h3 {
+    color: var(--primary-green);
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.milestone-card p {
+    color: var(--gray-700);
+    font-size: 1.125rem;
+}
+
+.milestone-card.celebration {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+.milestone-card.celebration h3 {
+    color: #f59e0b;
+    font-size: 2rem;
+}
+
+@media (max-width: 768px) {
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+
+    .progress-stats {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .action-cards {
+        grid-template-columns: 1fr;
+    }
+}
