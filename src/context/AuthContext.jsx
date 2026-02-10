@@ -16,21 +16,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // ==============================
-  // BOOTSTRAP: carregar sessão
+  // BOOTSTRAP DA SESSÃO
   // ==============================
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
 
-    if (!savedToken || !savedUser) {
-      localStorage.removeItem('token');
+    if (!savedToken) {
       localStorage.removeItem('user');
       setLoading(false);
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(savedUser);
+      const parsedUser = savedUser ? JSON.parse(savedUser) : null;
       setToken(savedToken);
       setUser(parsedUser);
     } catch {
@@ -42,15 +41,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // ==============================
-  // LOGIN (TOKEN ÚNICO POR SESSÃO)
+  // HELPER: headers autenticados
+  // ==============================
+  const authHeaders = () => ({
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+
+  // ==============================
+  // LOGIN
   // ==============================
   const login = async (email, senha) => {
     try {
-      // 🔥 LIMPA QUALQUER SESSÃO ANTIGA
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setToken(null);
-      setUser(null);
+      logout();
 
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -64,7 +67,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: data.message || 'Erro no login' };
       }
 
-      // ✅ SALVA TOKEN + USUÁRIO
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
@@ -82,10 +84,7 @@ export const AuthProvider = ({ children }) => {
   // ==============================
   const register = async (nome, email, senha) => {
     try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setToken(null);
-      setUser(null);
+      logout();
 
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -112,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ==============================
-  // LOGOUT (LIMPEZA TOTAL)
+  // LOGOUT TOTAL
   // ==============================
   const logout = () => {
     localStorage.removeItem('token');
@@ -130,7 +129,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        isAuthenticated: !!token && !!user
+        authHeaders,
+        isAuthenticated: !!token
       }}
     >
       {children}
