@@ -2,19 +2,23 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  // 🔥 ESSENCIAL para Railway / Express / produção
-  base: './',
-
   plugins: [react()],
 
-  // 🔧 Usado apenas em desenvolvimento local
+  // 🔥 ESSENCIAL PARA PRODUÇÃO COM EXPRESS
+  base: '/',
+
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
+  },
+
   server: {
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
-        secure: false,
       },
     },
   },
