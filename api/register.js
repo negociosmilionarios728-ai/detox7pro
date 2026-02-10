@@ -1,10 +1,11 @@
 import pg from 'pg';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
 const { Pool } = pg;
 
+// Pool de conexão com o Postgres (Railway)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
   try {
     const { nome, email, senha } = req.body;
 
-    // Validações
+    // Validações básicas
     if (!nome || !email || !senha) {
       return res.status(400).json({
         success: false,
@@ -37,7 +38,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Verificar se email já existe
+    // Verificar se o email já existe
     const checkEmail = await pool.query(
       'SELECT id FROM users WHERE email = $1',
       [email]
@@ -50,13 +51,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Hash da senha
+    // Gerar hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Gerar UUID
-    const userId = uuidv4();
+    // Gerar UUID nativo do Node (sem dependências externas)
+    const userId = crypto.randomUUID();
 
-    // Inserir usuário (COLUNAS CORRETAS)
+    // Inserir usuário (COLUNAS CERTAS DA SUA TABELA)
     const result = await pool.query(
       `
       INSERT INTO users (id, name, email, password)
