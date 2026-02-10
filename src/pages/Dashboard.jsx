@@ -31,57 +31,35 @@ const motivationalQuotes = [
 function Dashboard() {
     const { user, logout, token, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+
     const [progresso, setProgresso] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [quote] = useState(() => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
+    const [quote] = useState(
+        () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
+    );
 
     useEffect(() => {
         if (!authLoading && user) {
-            console.log('[v0] Dashboard - user carregado:', user);
-            fetchProgresso();
+            carregarProgresso();
         }
     }, [authLoading, user]);
 
-    const getFirstName = (fullName) => {
-        if (!fullName) return '';
-        return fullName.split(' ')[0];
-    };
-
-    const fetchProgresso = async () => {
+    const carregarProgresso = async () => {
         try {
-            const response = await fetch(`/api/progress/${user?.id}`, {
+            const response = await fetch(`/api/progress/${user.id}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setProgresso(data);
-                return;
-            }
-        } catch (error) {
-            console.log('[v0] API indisponível, usando mock para teste no preview:', error.message);
-        }
-
-        // Fallback com mock para teste no preview
-        try {
-            const progressData = JSON.parse(localStorage.getItem('detox_progress') || '{}');
-            
-            if (Object.keys(progressData).length === 0) {
-                progressData.dias_concluidos = [];
-                progressData.dia_atual = 1;
-                progressData.porcentagem_conclusao = 0;
+            if (!response.ok) {
+                throw new Error('Erro ao buscar progresso');
             }
 
-            setProgresso(progressData);
+            const data = await response.json();
+            setProgresso(data);
         } catch (error) {
             console.error('Erro ao carregar progresso:', error);
-            setProgresso({
-                dias_concluidos: [],
-                dia_atual: 1,
-                porcentagem_conclusao: 0
-            });
         } finally {
             setLoading(false);
         }
@@ -101,7 +79,6 @@ function Dashboard() {
         );
     }
 
-    // Se não tem usuário autenticado, redireciona para login
     if (!user) {
         navigate('/login');
         return null;
@@ -117,12 +94,11 @@ function Dashboard() {
                 <div className="container">
                     <div className="header-content">
                         <div className="logo-small">
-                            <Leaf className="logo-icon" size={24} />
-                            <span className="logo-text">DETOX 7PRO</span>
+                            <Leaf size={24} />
+                            <span>DETOX 7PRO</span>
                         </div>
                         <button className="btn btn-ghost" onClick={handleLogout}>
-                            <LogOut size={18} style={{ marginRight: '8px' }} />
-                            Sair
+                            <LogOut size={18} /> Sair
                         </button>
                     </div>
                 </div>
@@ -130,136 +106,50 @@ function Dashboard() {
 
             <main className="dashboard-main">
                 <div className="container">
-                    <div className="welcome-section fade-in">
-                        <h1>Olá, {getFirstName(user?.nome)}!</h1>
-                        <p className="quote">{quote}</p>
-                    </div>
+                    <h1>Olá, {user.nome.split(' ')[0]}!</h1>
+                    <p className="quote">{quote}</p>
 
-                    <div className="progress-card card card-glass">
-                        <div className="progress-header">
-                            <h2>Seu Progresso</h2>
-                            <span className="day-badge badge badge-success">
-                                Dia {diaAtual} de 30
-                            </span>
+                    <div className="progress-card">
+                        <h2>Seu Progresso</h2>
+                        <span>Dia {diaAtual} de 30</span>
+
+                        <div className="stats">
+                            <div>{diasConcluidos.length} dias concluídos</div>
+                            <div>{Math.round(porcentagem)}%</div>
+                            <div>{30 - diasConcluidos.length} dias restantes</div>
                         </div>
 
-                        <div className="progress-stats">
-                            <div className="stat">
-                                <span className="stat-value">{diasConcluidos.length}</span>
-                                <span className="stat-label">Dias Concluídos</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-value">{Math.round(porcentagem)}%</span>
-                                <span className="stat-label">Completo</span>
-                            </div>
-                            <div className="stat">
-                                <span className="stat-value">{30 - diasConcluidos.length}</span>
-                                <span className="stat-label">Dias Restantes</span>
-                            </div>
-                        </div>
-
-                        <div className="progress-bar-container">
-                            <div className="progress-bar">
-                                <div
-                                    className="progress-bar-fill"
-                                    style={{ width: `${porcentagem}%` }}
-                                ></div>
-                            </div>
-                            <span className="progress-percentage">{Math.round(porcentagem)}%</span>
+                        <div className="progress-bar">
+                            <div style={{ width: `${porcentagem}%` }} />
                         </div>
                     </div>
 
-                    <div className="action-cards">
-                        <div
-                            className="action-card card"
-                            onClick={() => navigate(`/tarefa/${diaAtual}`)}
-                        >
-                            <div className="action-icon-wrapper">
-                                <ClipboardList className="action-icon" size={48} />
-                            </div>
-                            <h3>Tarefa de Hoje</h3>
-                            <p>Dia {diaAtual}: Veja sua tarefa diária</p>
-                            <button className="btn btn-primary">Ver Tarefa</button>
-                        </div>
+                    <div className="actions">
+                        <button onClick={() => navigate(`/tarefa/${diaAtual}`)}>
+                            <ClipboardList /> Ver tarefa
+                        </button>
 
-                        <div
-                            className="action-card card"
-                            onClick={() => navigate('/receitas')}
-                        >
-                            <div className="action-icon-wrapper">
-                                <Salad className="action-icon" size={48} />
-                            </div>
-                            <h3>Receitas</h3>
-                            <p>Explore receitas detox e emagrecimento</p>
-                            <button className="btn btn-secondary">Ver Receitas</button>
-                        </div>
+                        <button onClick={() => navigate('/receitas')}>
+                            <Salad /> Receitas
+                        </button>
 
-                        <div
-                            className="action-card card"
-                            onClick={() => navigate('/analise-calorias')}
-                        >
-                            <div className="action-icon-wrapper">
-                                <Camera className="action-icon" size={48} />
-                            </div>
-                            <h3>Análise de Calorias</h3>
-                            <p>Tire foto do prato e veja as calorias</p>
-                            <button className="btn btn-secondary">Analisar Prato</button>
-                        </div>
+                        <button onClick={() => navigate('/analise-calorias')}>
+                            <Camera /> Analisar prato
+                        </button>
 
-                        <div
-                            className="action-card card"
-                            onClick={() => navigate('/progresso')}
-                        >
-                            <div className="action-icon-wrapper">
-                                <BarChart2 className="action-icon" size={48} />
-                            </div>
-                            <h3>Meu Progresso</h3>
-                            <p>Acompanhe sua evolução completa</p>
-                            <button className="btn btn-secondary">Ver Progresso</button>
-                        </div>
+                        <button onClick={() => navigate('/progresso')}>
+                            <BarChart2 /> Meu progresso
+                        </button>
 
-                        <div
-                            className="action-card card"
-                            onClick={() => navigate('/ebook')}
-                        >
-                            <div className="action-icon-wrapper">
-                                <BookOpen className="action-icon" size={48} />
-                            </div>
-                            <h3>Ebook 70 Receitas Detox</h3>
-                            <p>Acesse o guia completo de receitas</p>
-                            <button className="btn btn-secondary">Ver Ebook</button>
-                        </div>
+                        <button onClick={() => navigate('/ebook')}>
+                            <BookOpen /> Ebook
+                        </button>
                     </div>
-
-                    {diasConcluidos.length === 7 && (
-                        <div className="milestone-card card">
-                            <Target size={48} className="milestone-icon" color="#10b981" />
-                            <h3>Parabéns! 1 Semana Completa!</h3>
-                            <p>Você está no caminho certo. Continue assim!</p>
-                        </div>
-                    )}
-
-                    {diasConcluidos.length === 14 && (
-                        <div className="milestone-card card">
-                            <Star size={48} className="milestone-icon" color="#10b981" />
-                            <h3>Incrível! Metade do Desafio!</h3>
-                            <p>Você já percorreu metade da jornada. Não desista agora!</p>
-                        </div>
-                    )}
-
-                    {diasConcluidos.length === 21 && (
-                        <div className="milestone-card card">
-                            <Flame size={48} className="milestone-icon" color="#10b981" />
-                            <h3>21 Dias! Novo Hábito Formado!</h3>
-                            <p>Cientificamente, você criou um novo hábito. Sensacional!</p>
-                        </div>
-                    )}
 
                     {diasConcluidos.length === 30 && (
-                        <div className="milestone-card card celebration">
-                            <Trophy size={48} className="milestone-icon" color="#f59e0b" />
-                            <h3>DESAFIO COMPLETO!</h3>
-                            <p>Você transformou sua vida em 30 dias. Parabéns pela dedicação!</p>
+                        <div className="final">
+                            <Trophy size={48} />
+                            <h2>Desafio completo!</h2>
                         </div>
                     )}
                 </div>

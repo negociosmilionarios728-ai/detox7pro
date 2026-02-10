@@ -1,124 +1,63 @@
-import pg from 'pg';
-import jwt from 'jsonwebtoken';
+import pg from "pg";
 
 const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 });
 
-const JWT_SECRET = process.env.JWT_SECRET;
+export default async function handler(req, res) {
+  const userId = req.headers["x-user-id"];
 
-// ============================
-// Utils
-// ============================
-function verifyToken(req) {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return null;
-
-  try {
-    return jwt.verify(auth.replace('Bearer ', ''), JWT_SECRET);
-  } catch {
-    return null;
-  }
-}
-
-// ============================
-// GET /api/progress/:userId
-// ============================
-export async function getProgress(req, res) {
-  const decoded = verifyToken(req);
-  if (!decoded) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
-
-  const userId = Number(req.params.userId);
-  if (decoded.id !== userId) {
-    return res.status(403).json({ message: 'Acesso negado' });
+  if (!userId) {
+    return res.status(401).json({ message: "Usuário não autenticado" });
   }
 
   try {
-    const { rows } = await pool.query(
-      `SELECT completed_days, current_day
-       FROM user_progress
-       WHERE user_id = $1`,
-      [userId]
-    );
+    // 🔹 BUSCAR progresso
+    if (req.method === "GET") {
+      const result = await pool.query(
+        "SELECT * FROM user_progress WHERE user_id = $1",
+        [userId]
+      );
 
-    if (rows.length === 0) {
-      return res.json({
-        dias_concluidos: [],
-        dia_atual: 1,
-        porcentagem_conclusao: 0
-      });
+      if (result.rows.length === 0) {
+        // cria progresso inicial
+        const created = await pool.query(
+          `INSERT INTO user_progress 
+           (id, user_id, current_day, completed_days, progress_percent, started_at, updated_at)
+           VALUES (gen_random_uuid(), $1, 1, 0, 0, now(), now())
+           RETURNING *`,
+          [userId]
+        );
+
+        return res.json(created.rows[0]);
+      }
+
+      return res.json(result.rows[0]);
     }
 
-    const completedDays = rows[0].completed_days || [];
-    const currentDay = rows[0].current_day || 1;
+    // 🔹 ATUALIZAR progresso
+    if (req.method === "POST") {
+      const { current_day, completed_days, progress_percent } = req.body;
 
-    return res.json({
-      dias_concluidos: completedDays,
-      dia_atual: currentDay,
-      porcentagem_conclusao: Math.round((completedDays.length / 30) * 100)
-    });
+      await pool.query(
+        `UPDATE user_progress
+         SET current_day = $1,
+             completed_days = $2,
+             progress_percent = $3,
+             updated_at = now()
+         WHERE user_id = $4`,
+        [current_day, completed_days, progress_percent, userId]
+      );
+
+      return res.json({ success: true });
+    }
+
+    return res.status(405).end();
   } catch (err) {
-    console.error('[GET PROGRESS]', err);
-    res.status(500).json({ message: 'Erro ao buscar progresso' });
-  }
-}
-
-// ============================
-// POST /api/progress/complete
-// ============================
-export async function completeDay(req, res) {
-  const decoded = verifyToken(req);
-  if (!decoded) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
-
-  const { dia } = req.body;
-  const userId = decoded.id;
-
-  try {
-    const { rows } = await pool.query(
-      `SELECT completed_days
-       FROM user_progress
-       WHERE user_id = $1`,
-      [userId]
-    );
-
-    let completedDays = [];
-
-    if (rows.length > 0 && Array.isArray(rows[0].completed_days)) {
-      completedDays = rows[0].completed_days;
-    }
-
-    if (!completedDays.includes(dia)) {
-      completedDays.push(dia);
-    }
-
-    const nextDay = completedDays.length + 1;
-
-    await pool.query(
-      `INSERT INTO user_progress (user_id, completed_days, current_day, last_updated)
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT (user_id)
-       DO UPDATE SET
-         completed_days = $2,
-         current_day = $3,
-         last_updated = NOW()`,
-      [userId, completedDays, nextDay]
-    );
-
-    res.json({
-      success: true,
-      dias_concluidos: completedDays,
-      dia_atual: nextDay,
-      porcentagem_conclusao: Math.round((completedDays.length / 30) * 100)
-    });
-  } catch (err) {
-    console.error('[COMPLETE DAY]', err);
-    res.status(500).json({ message: 'Erro ao atualizar progresso' });
+    console.error(err);
+    return res.status(500).json({ message: "Erro no progresso" });
   }
 }
