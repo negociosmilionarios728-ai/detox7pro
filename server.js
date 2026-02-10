@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json());
 
-// Log simples
+// Log simples (ajuda muito no Railway)
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
@@ -34,7 +34,7 @@ import forgotPasswordHandler from './api/forgot-password.js';
 import getPasswordsHandler from './api/get-passwords.js';
 import savePasswordHandler from './api/save-password.js';
 
-// ✅ PROGRESSO — DEFAULT EXPORT
+// ✅ PROGRESSO — export default (bate com progress.js)
 import progressHandler from './api/progress.js';
 
 // ==============================
@@ -55,7 +55,7 @@ app.post('/api/auth/forgot-password', forgotPasswordHandler);
 app.get('/api/passwords', getPasswordsHandler);
 app.post('/api/passwords', savePasswordHandler);
 
-// ✅ Progresso (FRONTEND ESPERA ISSO)
+// ✅ Progresso (GET e POST no mesmo handler)
 app.get('/api/progress', progressHandler);
 app.post('/api/progress', progressHandler);
 
@@ -74,7 +74,7 @@ app.use(express.static(publicPath));
 app.use(express.static(distPath));
 
 // ==============================
-// Catch-all
+// Catch-all (SPA)
 // ==============================
 app.use((req, res) => {
   if (req.path.startsWith('/api')) {
@@ -94,4 +94,3 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server rodando na porta ${PORT}`);
 });
-
