@@ -5,9 +5,7 @@ const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -19,17 +17,15 @@ function verifyToken(req) {
     return null;
   }
 
-  const token = authHeader.substring(7);
-
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(authHeader.substring(7), JWT_SECRET);
   } catch {
     return null;
   }
 }
 
 // ==============================
-// HANDLER PRINCIPAL (DEFAULT)
+// GET / POST progress
 // ==============================
 export default async function progressHandler(req, res) {
   const decoded = verifyToken(req);
@@ -41,14 +37,25 @@ export default async function progressHandler(req, res) {
   const userId = decoded.id;
 
   try {
-    // GET progresso
+    // ==========================
+    // GET - Buscar progresso
+    // ==========================
     if (req.method === 'GET') {
-      const result = await pool.query(
+      let result = await pool.query(
         'SELECT completed_days, current_day FROM user_progress WHERE user_id = $1',
         [userId]
       );
 
+      // 👉 CRIA O REGISTRO SE NÃO EXISTIR
       if (result.rows.length === 0) {
+        await pool.query(
+          `
+          INSERT INTO user_progress (user_id, completed_days, current_day)
+          VALUES ($1, $2, $3)
+          `,
+          [userId, [], 1]
+        );
+
         return res.json({
           dias_concluidos: [],
           dia_atual: 1,
@@ -66,20 +73,18 @@ export default async function progressHandler(req, res) {
       });
     }
 
-    // POST concluir dia
+    // ==========================
+    // POST - Concluir dia
+    // ==========================
     if (req.method === 'POST') {
       const { dia } = req.body;
 
-      const check = await pool.query(
+      const result = await pool.query(
         'SELECT completed_days FROM user_progress WHERE user_id = $1',
         [userId]
       );
 
-      let completedDays = [];
-
-      if (check.rows.length > 0) {
-        completedDays = check.rows[0].completed_days || [];
-      }
+      let completedDays = result.rows[0]?.completed_days || [];
 
       if (!completedDays.includes(dia)) {
         completedDays.push(dia);
@@ -89,15 +94,13 @@ export default async function progressHandler(req, res) {
 
       await pool.query(
         `
-        INSERT INTO user_progress (user_id, completed_days, current_day, last_updated)
-        VALUES ($1, $2, $3, NOW())
-        ON CONFLICT (user_id)
-        DO UPDATE SET
-          completed_days = $2,
-          current_day = $3,
-          last_updated = NOW()
+        UPDATE user_progress
+        SET completed_days = $1,
+            current_day = $2,
+            last_updated = NOW()
+        WHERE user_id = $3
         `,
-        [userId, completedDays, nextDay]
+        [completedDays, nextDay, userId]
       );
 
       return res.json({
