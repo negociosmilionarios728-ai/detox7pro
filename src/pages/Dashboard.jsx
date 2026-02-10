@@ -33,6 +33,7 @@ function Dashboard() {
     dia_atual: 1,
     porcentagem_conclusao: 0
   });
+
   const [loading, setLoading] = useState(true);
 
   const [quote] = useState(
@@ -40,13 +41,12 @@ function Dashboard() {
   );
 
   // ===============================
-  // CARREGAR PROGRESSO (SEGURO)
+  // CARREGAR PROGRESSO (FONTE ÚNICA: API)
   // ===============================
   useEffect(() => {
     if (authLoading) return;
 
     if (!user || !token) {
-      setLoading(false);
       navigate('/login');
       return;
     }
@@ -60,7 +60,8 @@ function Dashboard() {
       const response = await fetch('/api/progress', {
         headers: {
           Authorization: `Bearer ${token}`
-        }
+        },
+        cache: 'no-store' // 🔥 garante sincronização entre dispositivos
       });
 
       if (!response.ok) {
@@ -75,9 +76,8 @@ function Dashboard() {
         porcentagem_conclusao: data.porcentagem_conclusao || 0
       });
     } catch (error) {
-      console.error('[Dashboard] Falha ao carregar progresso:', error);
+      console.error('[Dashboard] Erro ao carregar progresso:', error);
 
-      // ✅ fallback para nunca travar a tela
       setProgresso({
         dias_concluidos: [],
         dia_atual: 1,
