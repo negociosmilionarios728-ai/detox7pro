@@ -1,94 +1,60 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './DailyTask.css';
+import jwt from 'jsonwebtoken';
+import pool from '../db.js'; // ou ajuste conforme seu projeto
 
-export default function DailyTask() {
-  const { dia } = useParams();
-  const navigate = useNavigate();
-  const { token, user, loading: authLoading } = useAuth();
-
-  const [tarefa, setTarefa] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [completing, setCompleting] = useState(false);
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!user || !token) {
-      navigate('/login');
-      return;
+export default async function progressHandler(req, res) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Token não fornecido' });
     }
 
-    carregarTarefa();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, dia]);
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
 
-  const carregarTarefa = async () => {
-    try {
-      const res = await fetch(`/api/tasks/${dia}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        cache: 'no-store'
-      });
+    if (req.method === 'GET') {
+      const result = await pool.query(
+        'SELECT dias_concluidos, dia_atual, porcentagem_conclusao FROM progress WHERE user_id = $1',
+        [userId]
+      );
 
-      if (!res.ok) throw new Error();
+      if (result.rows.length === 0) {
+        return res.json({
+          dias_concluidos: [],
+          dia_atual: 1,
+          porcentagem_conclusao: 0
+        });
+      }
 
-      const data = await res.json();
-      setTarefa(data);
-    } catch (err) {
-      alert('Erro ao carregar tarefa');
-      navigate('/dashboard');
-    } finally {
-      setLoading(false);
+      return res.json(result.rows[0]);
     }
-  };
 
-  const handleComplete = async () => {
-    if (!confirm('Concluir este dia?')) return;
+    if (req.method === 'POST') {
+      const { dia } = req.body;
 
-    setCompleting(true);
+      // lógica simples (exemplo)
+      const diasConcluidos = [dia];
+      const porcentagem = (diasConcluidos.length / 30) * 100;
 
-    try {
-      const res = await fetch('/api/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ dia: Number(dia) })
-      });
+      await pool.query(
+        `
+        INSERT INTO progress (user_id, dias_concluidos, dia_atual, porcentagem_conclusao)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id)
+        DO UPDATE SET
+          dias_concluidos = EXCLUDED.dias_concluidos,
+          dia_atual = EXCLUDED.dia_atual,
+          porcentagem_conclusao = EXCLUDED.porcentagem_conclusao
+        `,
+        [userId, diasConcluidos, dia + 1, porcentagem]
+      );
 
-      if (!res.ok) throw new Error();
-
-      navigate('/dashboard');
-    } catch {
-      alert('Erro ao salvar progresso');
-    } finally {
-      setCompleting(false);
+      return res.json({ success: true });
     }
-  };
 
-  if (authLoading || loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner" />
-      </div>
-    );
+    res.status(405).end();
+  } catch (err) {
+    console.error('[API Progress]', err);
+    res.status(500).json({ error: 'Erro interno' });
   }
-
-  if (!tarefa) return null;
-
-  return (
-    <div className="daily-task-container">
-      <h1>Dia {tarefa.dia}</h1>
-      <h2>{tarefa.titulo}</h2>
-      <p>{tarefa.objetivo}</p>
-
-      <button onClick={handleComplete} disabled={completing}>
-        {completing ? 'Salvando...' : 'Concluir Dia'}
-      </button>
-    </div>
-  );
 }
