@@ -19,84 +19,65 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json());
 
-// Log de requisições
+// Log
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
 // ==============================
-// Importação das rotas (API)
+// Importação das APIs
 // ==============================
 import loginHandler from './api/login.js';
 import registerHandler from './api/register.js';
 import forgotPasswordHandler from './api/forgot-password.js';
 import getPasswordsHandler from './api/get-passwords.js';
 import savePasswordHandler from './api/save-password.js';
-import progressHandler from './api/progress.js'; // 👈 IMPORT CORRETO
+import progressHandler from './api/progress.js';
 
 // ==============================
-// Rotas de autenticação
+// Rotas API
 // ==============================
-app.post('/api/auth/register', registerHandler);
 app.post('/api/register', registerHandler);
+app.post('/api/auth/register', registerHandler);
 
-app.post('/api/auth/login', loginHandler);
 app.post('/api/login', loginHandler);
+app.post('/api/auth/login', loginHandler);
 
-app.post('/api/auth/forgot-password', forgotPasswordHandler);
 app.post('/api/forgot-password', forgotPasswordHandler);
+app.post('/api/auth/forgot-password', forgotPasswordHandler);
 
-// ==============================
-// Rotas de senhas
-// ==============================
 app.get('/api/passwords', getPasswordsHandler);
 app.post('/api/passwords', savePasswordHandler);
 
-// ==============================
-// Rotas de progresso (HTTP → handler)
-// ==============================
 app.get('/api/progress', progressHandler);
 app.post('/api/progress', progressHandler);
 
-// ==============================
 // Health check
-// ==============================
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', server: 'express' });
+app.get('/api/health', (_, res) => {
+  res.json({ status: 'ok' });
 });
 
 // ==============================
-// Frontend (React / HTML)
+// Frontend
 // ==============================
+const publicPath = path.join(__dirname, 'public_html');
+const distPath = path.join(__dirname, 'dist');
 
-// 1️⃣ Produção (public_html)
-app.use(express.static(path.join(__dirname, 'public_html')));
+app.use(express.static(publicPath));
+app.use(express.static(distPath));
 
-// 2️⃣ Build local (dist)
-app.use(express.static(path.join(__dirname, 'dist')));
-
-// Catch-all (React Router)
-app.get('*', (req, res) => {
+// ✅ CATCH-ALL CORRETO (Express 5 safe)
+app.use((req, res) => {
   if (req.path.startsWith('/api')) {
-    return res.status(404).json({
-      success: false,
-      message: 'API route not found'
-    });
+    return res.status(404).json({ message: 'API route not found' });
   }
 
-  const publicIndex = path.join(__dirname, 'public_html', 'index.html');
-  const distIndex = path.join(__dirname, 'dist', 'index.html');
+  const indexFile = path.join(publicPath, 'index.html');
 
-  res.sendFile(publicIndex, err => {
+  res.sendFile(indexFile, err => {
     if (err) {
-      res.sendFile(distIndex, err2 => {
-        if (err2) {
-          res.status(404).send(
-            'Frontend não encontrado. Gere o build ou verifique o public_html.'
-          );
-        }
-      });
+      res.status(404).send('Frontend não encontrado');
     }
   });
 });
@@ -105,9 +86,5 @@ app.get('*', (req, res) => {
 // Start server
 // ==============================
 app.listen(PORT, () => {
-  console.log('\n🚀 Server rodando');
-  console.log(`🌍 URL: http://localhost:${PORT}`);
-  console.log(`🔐 Login: http://localhost:${PORT}/api/auth/login`);
-  console.log(`📝 Register: http://localhost:${PORT}/api/auth/register`);
-  console.log('✅ Pronto para receber requisições\n');
+  console.log(`🚀 Server rodando na porta ${PORT}`);
 });
