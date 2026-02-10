@@ -28,16 +28,30 @@ function Dashboard() {
   const { user, logout, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [progresso, setProgresso] = useState(null);
+  const [progresso, setProgresso] = useState({
+    dias_concluidos: [],
+    dia_atual: 1,
+    porcentagem_conclusao: 0
+  });
   const [loading, setLoading] = useState(true);
+
   const [quote] = useState(
     () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
   );
 
+  // ===============================
+  // CARREGAR PROGRESSO (SEGURO)
+  // ===============================
   useEffect(() => {
-    if (!authLoading && user && token) {
-      carregarProgresso();
+    if (authLoading) return;
+
+    if (!user || !token) {
+      setLoading(false);
+      navigate('/login');
+      return;
     }
+
+    carregarProgresso();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, token]);
 
@@ -54,9 +68,16 @@ function Dashboard() {
       }
 
       const data = await response.json();
-      setProgresso(data);
+
+      setProgresso({
+        dias_concluidos: data.dias_concluidos || [],
+        dia_atual: data.dia_atual || 1,
+        porcentagem_conclusao: data.porcentagem_conclusao || 0
+      });
     } catch (error) {
-      console.error('[Dashboard] Erro ao carregar progresso:', error);
+      console.error('[Dashboard] Falha ao carregar progresso:', error);
+
+      // ✅ fallback para nunca travar a tela
       setProgresso({
         dias_concluidos: [],
         dia_atual: 1,
@@ -68,12 +89,15 @@ function Dashboard() {
   };
 
   const handleLogout = () => {
-    if (confirm('Tem certeza que deseja sair?')) {
+    if (window.confirm('Tem certeza que deseja sair?')) {
       logout();
       navigate('/login');
     }
   };
 
+  // ===============================
+  // ESTADOS DE TELA
+  // ===============================
   if (authLoading || loading) {
     return (
       <div className="loading-container">
@@ -87,10 +111,13 @@ function Dashboard() {
     return null;
   }
 
-  const diasConcluidos = progresso?.dias_concluidos || [];
-  const diaAtual = progresso?.dia_atual || 1;
-  const porcentagem = progresso?.porcentagem_conclusao || 0;
+  const diasConcluidos = progresso.dias_concluidos;
+  const diaAtual = progresso.dia_atual;
+  const porcentagem = progresso.porcentagem_conclusao;
 
+  // ===============================
+  // RENDER
+  // ===============================
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
