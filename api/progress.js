@@ -20,17 +20,15 @@ function verifyToken(req) {
     return null;
   }
 
-  const token = authHeader.slice(7);
-
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(authHeader.slice(7), JWT_SECRET);
   } catch {
     return null;
   }
 }
 
 // ==============================
-// PROGRESS HANDLER (DEFAULT)
+// PROGRESS HANDLER (FINAL)
 // ==============================
 export default async function progressHandler(req, res) {
   const decoded = verifyToken(req);
@@ -43,17 +41,28 @@ export default async function progressHandler(req, res) {
 
   try {
     // ==========================
-    // GET progresso
+    // GET progresso (cria se não existir)
     // ==========================
     if (req.method === 'GET') {
       const result = await pool.query(
-        `SELECT completed_days, current_day
-         FROM user_progress
-         WHERE user_id = $1`,
+        `
+        SELECT completed_days, current_day
+        FROM user_progress
+        WHERE user_id = $1
+        `,
         [userId]
       );
 
+      // 🔥 CRIA PROGRESSO AUTOMATICAMENTE
       if (result.rows.length === 0) {
+        await pool.query(
+          `
+          INSERT INTO user_progress (user_id, completed_days, current_day, started_at)
+          VALUES ($1, $2, $3, NOW())
+          `,
+          [userId, [], 1]
+        );
+
         return res.json({
           dias_concluidos: [],
           dia_atual: 1,
@@ -61,12 +70,13 @@ export default async function progressHandler(req, res) {
         });
       }
 
-      const { completed_days = [], current_day = 1 } = result.rows[0];
+      const { completed_days, current_day } = result.rows[0];
+      const completed = completed_days || [];
 
       return res.json({
-        dias_concluidos: completed_days,
-        dia_atual: current_day,
-        porcentagem_conclusao: Math.round((completed_days.length / 30) * 100)
+        dias_concluidos: completed,
+        dia_atual: current_day || 1,
+        porcentagem_conclusao: Math.round((completed.length / 30) * 100)
       });
     }
 
@@ -76,29 +86,33 @@ export default async function progressHandler(req, res) {
     if (req.method === 'POST') {
       const { dia } = req.body;
 
-      const check = await pool.query(
-        `SELECT completed_days
-         FROM user_progress
-         WHERE user_id = $1`,
+      if (!dia || typeof dia !== 'number') {
+        return res.status(400).json({ message: 'Dia inválido' });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT completed_days
+        FROM user_progress
+        WHERE user_id = $1
+        `,
         [userId]
       );
 
-      let completedDays = check.rows[0]?.completed_days || [];
+      let completedDays = result.rows[0]?.completed_days || [];
 
       if (!completedDays.includes(dia)) {
-        completedDays.push(dia);
+        completedDays = [...completedDays, dia].sort((a, b) => a - b);
       }
 
       const nextDay = completedDays.length + 1;
 
       await pool.query(
         `
-        INSERT INTO user_progress (user_id, completed_days, current_day, started_at)
-        VALUES ($1, $2, $3, NOW())
-        ON CONFLICT (user_id)
-        DO UPDATE SET
-          completed_days = EXCLUDED.completed_days,
-          current_day = EXCLUDED.current_day
+        UPDATE user_progress
+        SET completed_days = $2,
+            current_day = $3
+        WHERE user_id = $1
         `,
         [userId, completedDays, nextDay]
       );
