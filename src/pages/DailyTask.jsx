@@ -1,71 +1,227 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import './DailyTask.css';
+import { Leaf, Dumbbell } from 'lucide-react';
+import './Login.css';
 
-function DailyTask() {
-  const { dia } = useParams();
-  const navigate = useNavigate();
-  const { token } = useAuth();
+function Login() {
+    const { login, register } = useAuth();
+    const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({
+        nome: '',
+        email: '',
+        senha: ''
+    });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const [tarefa, setTarefa] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [completing, setCompleting] = useState(false);
-
-  useEffect(() => {
-    loadMock();
-  }, [dia]);
-
-  function loadMock() {
-    const tarefas = {
-      1: { dia: 1, titulo: 'Detox Inicial', objetivo: 'Início do processo' },
-      2: { dia: 2, titulo: 'Continuidade', objetivo: 'Manter o foco' },
-      3: { dia: 3, titulo: 'Avanço', objetivo: 'Evoluir hábitos' }
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+        setError('');
     };
 
-    setTarefa(tarefas[dia] || tarefas[1]);
-    setLoading(false);
-  }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
 
-  async function handleComplete() {
-    if (!confirm('Concluir este dia?')) return;
+        try {
+            let result;
+            if (isLogin) {
+                result = await login(formData.email, formData.senha);
+            } else {
+                if (!formData.nome) {
+                    setError('Por favor, preencha seu nome');
+                    setLoading(false);
+                    return;
+                }
+                result = await register(formData.nome, formData.email, formData.senha);
+            }
 
-    setCompleting(true);
+            if (!result.success) {
+                setError(result.error);
+            }
+        } catch (err) {
+            setError('Erro ao processar sua solicitação');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    try {
-      const res = await fetch('/api/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ dia: Number(dia) })
-      });
+    const handleForgotPassword = async () => {
+        if (!formData.email) {
+            setError('Por favor, digite seu email primeiro');
+            return;
+        }
 
-      if (!res.ok) throw new Error();
+        setLoading(true);
+        try {
+            const response = await fetch('/api/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: formData.email })
+            });
 
-      navigate('/dashboard');
-    } catch {
-      alert('Erro ao salvar progresso');
-    } finally {
-      setCompleting(false);
-    }
-  }
+            const data = await response.json();
+            alert(data.message || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.');
+            setShowForgotPassword(false);
+        } catch (err) {
+            setError('Erro ao processar solicitação');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  if (loading) return <div>Carregando...</div>;
-  if (!tarefa) return null;
+    return (
+        <div className="login-container">
+            <div className="login-card card card-glass fade-in">
+                <div className="login-header">
+                    <div className="logo">
+                        <span className="logo-icon">
+                            <Leaf size={40} color="var(--primary-green)" />
+                        </span>
+                        <h1>DETOX 7PRO</h1>
+                    </div>
+                    <p className="tagline">Transforme sua saúde em 30 dias</p>
+                </div>
 
-  return (
-    <div className="daily-task-container">
-      <h1>Dia {tarefa.dia}</h1>
-      <h2>{tarefa.titulo}</h2>
-      <p>{tarefa.objetivo}</p>
+                {showForgotPassword ? (
+                    <div className="forgot-password-form">
+                        <h2>Recuperar Senha</h2>
+                        <p className="text-muted mb-3">
+                            Digite seu email para receber instruções de recuperação
+                        </p>
+                        <div className="input-group">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="seu@email.com"
+                                required
+                            />
+                        </div>
+                        {error && <p className="error-message">{error}</p>}
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleForgotPassword}
+                            disabled={loading}
+                        >
+                            {loading ? 'Enviando...' : 'Enviar Instruções'}
+                        </button>
+                        <button
+                            className="btn btn-ghost mt-2"
+                            onClick={() => {
+                                setShowForgotPassword(false);
+                                setError('');
+                            }}
+                        >
+                            Voltar ao Login
+                        </button>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-toggle">
+                            <button
+                                type="button"
+                                className={`toggle-btn ${isLogin ? 'active' : ''}`}
+                                onClick={() => {
+                                    setIsLogin(true);
+                                    setError('');
+                                }}
+                            >
+                                Entrar
+                            </button>
+                            <button
+                                type="button"
+                                className={`toggle-btn ${!isLogin ? 'active' : ''}`}
+                                onClick={() => {
+                                    setIsLogin(false);
+                                    setError('');
+                                }}
+                            >
+                                Criar Conta
+                            </button>
+                        </div>
 
-      <button onClick={handleComplete} disabled={completing}>
-        {completing ? 'Salvando...' : 'Concluir Dia'}
-      </button>
-    </div>
-  );
+                        {!isLogin && (
+                            <div className="input-group">
+                                <label htmlFor="nome">Nome Completo</label>
+                                <input
+                                    type="text"
+                                    id="nome"
+                                    name="nome"
+                                    value={formData.nome}
+                                    onChange={handleChange}
+                                    placeholder="Seu nome"
+                                    required={!isLogin}
+                                />
+                            </div>
+                        )}
+
+                        <div className="input-group">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="seu@email.com"
+                                required
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label htmlFor="senha">Senha</label>
+                            <input
+                                type="password"
+                                id="senha"
+                                name="senha"
+                                value={formData.senha}
+                                onChange={handleChange}
+                                placeholder="Mínimo 6 caracteres"
+                                required
+                                minLength="6"
+                            />
+                        </div>
+
+                        {error && <p className="error-message">{error}</p>}
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'Processando...' : (isLogin ? 'Entrar' : 'Criar Conta')}
+                        </button>
+
+                        {isLogin && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost mt-2"
+                                onClick={() => setShowForgotPassword(true)}
+                            >
+                                Esqueci minha senha
+                            </button>
+                        )}
+                    </form>
+                )}
+
+                <div className="login-footer">
+                    <p className="motivation-text">
+                        <Dumbbell size={16} style={{ marginRight: '6px', display: 'inline', verticalAlign: 'text-bottom' }} />
+                        Seu corpo merece o melhor. Comece hoje!
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }
 
-export default DailyTask;
+export default Login;

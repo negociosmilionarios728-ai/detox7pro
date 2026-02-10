@@ -1,108 +1,94 @@
-import pg from 'pg';
-import jwt from 'jsonwebtoken';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import './DailyTask.css';
 
-const { Pool } = pg;
+export default function DailyTask() {
+  const { dia } = useParams();
+  const navigate = useNavigate();
+  const { token, user, loading: authLoading } = useAuth();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+  const [tarefa, setTarefa] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [completing, setCompleting] = useState(false);
 
-const JWT_SECRET = process.env.JWT_SECRET;
+  useEffect(() => {
+    if (authLoading) return;
 
-function verifyToken(req) {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return null;
-
-  try {
-    return jwt.verify(auth.slice(7), JWT_SECRET);
-  } catch {
-    return null;
-  }
-}
-
-export default async function progressHandler(req, res) {
-  const decoded = verifyToken(req);
-  if (!decoded?.id) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
-
-  const userId = decoded.id;
-
-  try {
-    // 🔹 GET — Buscar progresso
-    if (req.method === 'GET') {
-      const { rows } = await pool.query(
-        `SELECT completed_days, current_day
-         FROM user_progress
-         WHERE user_id = $1`,
-        [userId]
-      );
-
-      if (rows.length === 0) {
-        await pool.query(
-          `INSERT INTO user_progress (user_id, completed_days, current_day, started_at)
-           VALUES ($1, $2, $3, NOW())`,
-          [userId, [], 1]
-        );
-
-        return res.json({
-          dias_concluidos: [],
-          dia_atual: 1,
-          porcentagem_conclusao: 0
-        });
-      }
-
-      const completed = rows[0].completed_days || [];
-      const currentDay = rows[0].current_day || completed.length + 1;
-
-      return res.json({
-        dias_concluidos: completed,
-        dia_atual: currentDay,
-        porcentagem_conclusao: Math.round((completed.length / 30) * 100)
-      });
+    if (!user || !token) {
+      navigate('/login');
+      return;
     }
 
-    // 🔹 POST — Concluir dia
-    if (req.method === 'POST') {
-      const { dia } = req.body;
+    carregarTarefa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, dia]);
 
-      if (!Number.isInteger(dia) || dia < 1 || dia > 30) {
-        return res.status(400).json({ message: 'Dia inválido' });
-      }
-
-      const { rows } = await pool.query(
-        `SELECT completed_days FROM user_progress WHERE user_id = $1`,
-        [userId]
-      );
-
-      let completed = rows[0]?.completed_days || [];
-
-      if (!completed.includes(dia)) {
-        completed = [...completed, dia].sort((a, b) => a - b);
-      }
-
-      const nextDay = Math.min(completed.length + 1, 30);
-
-      await pool.query(
-        `UPDATE user_progress
-         SET completed_days = $2, current_day = $3
-         WHERE user_id = $1`,
-        [userId, completed, nextDay]
-      );
-
-      return res.json({
-        success: true,
-        dias_concluidos: completed,
-        dia_atual: nextDay,
-        porcentagem_conclusao: Math.round((completed.length / 30) * 100)
+  const carregarTarefa = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${dia}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: 'no-store'
       });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+      setTarefa(data);
+    } catch (err) {
+      alert('Erro ao carregar tarefa');
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return res.status(405).json({ message: 'Método não permitido' });
+  const handleComplete = async () => {
+    if (!confirm('Concluir este dia?')) return;
 
-  } catch (err) {
-    console.error('[PROGRESS ERROR]', err);
-    return res.status(500).json({ message: 'Erro interno' });
+    setCompleting(true);
+
+    try {
+      const res = await fetch('/api/progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ dia: Number(dia) })
+      });
+
+      if (!res.ok) throw new Error();
+
+      navigate('/dashboard');
+    } catch {
+      alert('Erro ao salvar progresso');
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner" />
+      </div>
+    );
   }
+
+  if (!tarefa) return null;
+
+  return (
+    <div className="daily-task-container">
+      <h1>Dia {tarefa.dia}</h1>
+      <h2>{tarefa.titulo}</h2>
+      <p>{tarefa.objetivo}</p>
+
+      <button onClick={handleComplete} disabled={completing}>
+        {completing ? 'Salvando...' : 'Concluir Dia'}
+      </button>
+    </div>
+  );
 }

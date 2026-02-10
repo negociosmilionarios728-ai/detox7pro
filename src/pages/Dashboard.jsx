@@ -24,7 +24,7 @@ const motivationalQuotes = [
   "Seja gentil com você mesmo neste processo!"
 ];
 
-function Dashboard() {
+export default function Dashboard() {
   const { user, logout, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -41,7 +41,7 @@ function Dashboard() {
   );
 
   // ===============================
-  // CARREGAR PROGRESSO (FONTE ÚNICA: API)
+  // CARREGAR PROGRESSO (API = VERDADE)
   // ===============================
   useEffect(() => {
     if (authLoading) return;
@@ -61,7 +61,7 @@ function Dashboard() {
         headers: {
           Authorization: `Bearer ${token}`
         },
-        cache: 'no-store' // 🔥 garante sincronização entre dispositivos
+        cache: 'no-store'
       });
 
       if (!response.ok) {
@@ -77,7 +77,6 @@ function Dashboard() {
       });
     } catch (error) {
       console.error('[Dashboard] Erro ao carregar progresso:', error);
-
       setProgresso({
         dias_concluidos: [],
         dia_atual: 1,
@@ -101,7 +100,7 @@ function Dashboard() {
   if (authLoading || loading) {
     return (
       <div className="loading-container">
-        <div className="spinner"></div>
+        <div className="spinner" />
       </div>
     );
   }
@@ -202,5 +201,3 @@ function Dashboard() {
     </div>
   );
 }
-
-export default Dashboard;
