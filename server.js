@@ -33,7 +33,7 @@ import registerHandler from './api/register.js';
 import forgotPasswordHandler from './api/forgot-password.js';
 import getPasswordsHandler from './api/get-passwords.js';
 import savePasswordHandler from './api/save-password.js';
-import { getProgress, completeDay } from './api/progress.js';
+import progressHandler from './api/progress.js'; // 👈 IMPORT CORRETO
 
 // ==============================
 // Rotas de autenticação
@@ -54,10 +54,10 @@ app.get('/api/passwords', getPasswordsHandler);
 app.post('/api/passwords', savePasswordHandler);
 
 // ==============================
-// Rotas de progresso
+// Rotas de progresso (HTTP → handler)
 // ==============================
-app.get('/api/progress/:userId', getProgress);
-app.post('/api/progress/complete', completeDay);
+app.get('/api/progress', progressHandler);
+app.post('/api/progress', progressHandler);
 
 // ==============================
 // Health check
@@ -77,8 +77,7 @@ app.use(express.static(path.join(__dirname, 'public_html')));
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // Catch-all (React Router)
-app.get(/.*/, (req, res) => {
-  // Se for rota de API inexistente
+app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({
       success: false,
@@ -89,10 +88,8 @@ app.get(/.*/, (req, res) => {
   const publicIndex = path.join(__dirname, 'public_html', 'index.html');
   const distIndex = path.join(__dirname, 'dist', 'index.html');
 
-  // Tenta public_html primeiro
   res.sendFile(publicIndex, err => {
     if (err) {
-      // Se não existir, tenta dist
       res.sendFile(distIndex, err2 => {
         if (err2) {
           res.status(404).send(
