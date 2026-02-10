@@ -11,7 +11,7 @@ const pool = new Pool({
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // ==============================
-// Token helper
+// TOKEN HELPER (JWT = VERDADE)
 // ==============================
 function verifyToken(req) {
   const authHeader = req.headers.authorization;
@@ -28,22 +28,22 @@ function verifyToken(req) {
 }
 
 // ==============================
-// PROGRESS HANDLER (RESILIENTE)
+// PROGRESS HANDLER — FINAL
+// ROTA ÚNICA: /api/progress
+// USER = SEMPRE DO JWT
 // ==============================
 export default async function progressHandler(req, res) {
   const decoded = verifyToken(req);
 
-  if (!decoded) {
+  if (!decoded || !decoded.id) {
     return res.status(401).json({ message: 'Token inválido' });
   }
 
-  // 🔒 FONTE ÚNICA DA VERDADE
-  // SEMPRE usar o ID do JWT
   const userId = decoded.id;
 
   try {
     // ==========================
-    // GET progresso
+    // GET — Buscar progresso
     // ==========================
     if (req.method === 'GET') {
       const result = await pool.query(
@@ -55,7 +55,7 @@ export default async function progressHandler(req, res) {
         [userId]
       );
 
-      // 🔥 Cria progresso automaticamente se não existir
+      // 🔥 Cria progresso automaticamente (1x)
       if (result.rows.length === 0) {
         await pool.query(
           `
@@ -72,23 +72,24 @@ export default async function progressHandler(req, res) {
         });
       }
 
-      const { completed_days, current_day } = result.rows[0];
-      const completed = completed_days || [];
+      const completed = result.rows[0].completed_days || [];
+      const currentDay =
+        result.rows[0].current_day || completed.length + 1;
 
       return res.json({
         dias_concluidos: completed,
-        dia_atual: current_day || 1,
+        dia_atual: currentDay,
         porcentagem_conclusao: Math.round((completed.length / 30) * 100)
       });
     }
 
     // ==========================
-    // POST concluir dia
+    // POST — Concluir dia
     // ==========================
     if (req.method === 'POST') {
       const { dia } = req.body;
 
-      if (!dia || typeof dia !== 'number') {
+      if (!Number.isInteger(dia) || dia < 1 || dia > 30) {
         return res.status(400).json({ message: 'Dia inválido' });
       }
 
@@ -103,11 +104,12 @@ export default async function progressHandler(req, res) {
 
       let completedDays = result.rows[0]?.completed_days || [];
 
+      // 🔒 Evita duplicação
       if (!completedDays.includes(dia)) {
         completedDays = [...completedDays, dia].sort((a, b) => a - b);
       }
 
-      const nextDay = completedDays.length + 1;
+      const nextDay = Math.min(completedDays.length + 1, 30);
 
       await pool.query(
         `
