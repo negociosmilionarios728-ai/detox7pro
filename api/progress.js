@@ -10,9 +10,15 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// ==============================
+// TOKEN HELPER
+// ==============================
 function verifyToken(req) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
 
   try {
     return jwt.verify(authHeader.slice(7), JWT_SECRET);
@@ -21,8 +27,12 @@ function verifyToken(req) {
   }
 }
 
+// ==============================
+// /api/progress
+// ==============================
 export default async function progressHandler(req, res) {
   const decoded = verifyToken(req);
+
   if (!decoded?.id) {
     return res.status(401).json({ message: 'Token inválido' });
   }
@@ -30,12 +40,10 @@ export default async function progressHandler(req, res) {
   const userId = decoded.id;
 
   try {
-    // GET progresso
+    // ---------- GET ----------
     if (req.method === 'GET') {
       const result = await pool.query(
-        `SELECT completed_days, current_day
-         FROM user_progress
-         WHERE user_id = $1`,
+        `SELECT completed_days, current_day FROM user_progress WHERE user_id = $1`,
         [userId]
       );
 
@@ -54,16 +62,15 @@ export default async function progressHandler(req, res) {
       }
 
       const completed = result.rows[0].completed_days || [];
-      const currentDay = result.rows[0].current_day || completed.length + 1;
 
       return res.json({
         dias_concluidos: completed,
-        dia_atual: currentDay,
+        dia_atual: result.rows[0].current_day,
         porcentagem_conclusao: Math.round((completed.length / 30) * 100)
       });
     }
 
-    // POST concluir dia
+    // ---------- POST ----------
     if (req.method === 'POST') {
       const { dia } = req.body;
 
@@ -100,7 +107,6 @@ export default async function progressHandler(req, res) {
     }
 
     return res.status(405).json({ message: 'Método não permitido' });
-
   } catch (err) {
     console.error('[PROGRESS ERROR]', err);
     return res.status(500).json({ message: 'Erro interno' });
