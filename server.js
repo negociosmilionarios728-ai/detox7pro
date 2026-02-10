@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json());
 
-// Log
+// Log simples
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
@@ -33,11 +33,15 @@ import registerHandler from './api/register.js';
 import forgotPasswordHandler from './api/forgot-password.js';
 import getPasswordsHandler from './api/get-passwords.js';
 import savePasswordHandler from './api/save-password.js';
-import progressHandler from './api/progress.js';
+
+// 🔥 IMPORT CORRETO (named exports)
+import { getProgress, completeDay } from './api/progress.js';
 
 // ==============================
 // Rotas API
 // ==============================
+
+// Auth
 app.post('/api/register', registerHandler);
 app.post('/api/auth/register', registerHandler);
 
@@ -47,11 +51,13 @@ app.post('/api/auth/login', loginHandler);
 app.post('/api/forgot-password', forgotPasswordHandler);
 app.post('/api/auth/forgot-password', forgotPasswordHandler);
 
+// Passwords
 app.get('/api/passwords', getPasswordsHandler);
 app.post('/api/passwords', savePasswordHandler);
 
-app.get('/api/progress', progressHandler);
-app.post('/api/progress', progressHandler);
+// ✅ Progresso (BATENDO COM O FRONTEND)
+app.get('/api/progress/:userId', getProgress);
+app.post('/api/progress/complete', completeDay);
 
 // Health check
 app.get('/api/health', (_, res) => {
@@ -67,7 +73,9 @@ const distPath = path.join(__dirname, 'dist');
 app.use(express.static(publicPath));
 app.use(express.static(distPath));
 
-// ✅ CATCH-ALL CORRETO (Express 5 safe)
+// ==============================
+// Catch-all (SPA)
+// ==============================
 app.use((req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ message: 'API route not found' });
