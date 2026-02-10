@@ -28,7 +28,7 @@ function verifyToken(req) {
 }
 
 // ==============================
-// PROGRESS HANDLER (FINAL)
+// PROGRESS HANDLER (RESILIENTE)
 // ==============================
 export default async function progressHandler(req, res) {
   const decoded = verifyToken(req);
@@ -37,11 +37,13 @@ export default async function progressHandler(req, res) {
     return res.status(401).json({ message: 'Token inválido' });
   }
 
+  // 🔒 FONTE ÚNICA DA VERDADE
+  // SEMPRE usar o ID do JWT
   const userId = decoded.id;
 
   try {
     // ==========================
-    // GET progresso (cria se não existir)
+    // GET progresso
     // ==========================
     if (req.method === 'GET') {
       const result = await pool.query(
@@ -53,7 +55,7 @@ export default async function progressHandler(req, res) {
         [userId]
       );
 
-      // 🔥 CRIA PROGRESSO AUTOMATICAMENTE
+      // 🔥 Cria progresso automaticamente se não existir
       if (result.rows.length === 0) {
         await pool.query(
           `
