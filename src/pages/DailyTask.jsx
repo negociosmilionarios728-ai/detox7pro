@@ -1,17 +1,39 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import './DailyTask.css';
 
 function DailyTask() {
   const { dia } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  const handleComplete = async () => {
+  const [tarefa, setTarefa] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [completing, setCompleting] = useState(false);
+
+  useEffect(() => {
+    loadMock();
+  }, [dia]);
+
+  function loadMock() {
+    const tarefas = {
+      1: { dia: 1, titulo: 'Detox Inicial', objetivo: 'Início do processo' },
+      2: { dia: 2, titulo: 'Continuidade', objetivo: 'Manter o foco' },
+      3: { dia: 3, titulo: 'Avanço', objetivo: 'Evoluir hábitos' }
+    };
+
+    setTarefa(tarefas[dia] || tarefas[1]);
+    setLoading(false);
+  }
+
+  async function handleComplete() {
     if (!confirm('Concluir este dia?')) return;
 
+    setCompleting(true);
+
     try {
-      const response = await fetch('/api/progress', {
+      const res = await fetch('/api/progress', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,27 +42,27 @@ function DailyTask() {
         body: JSON.stringify({ dia: Number(dia) })
       });
 
-      if (!response.ok) {
-        throw new Error('Falha ao salvar progresso');
-      }
+      if (!res.ok) throw new Error();
 
       navigate('/dashboard');
-    } catch (err) {
-      alert('Erro ao concluir tarefa');
-      console.error(err);
+    } catch {
+      alert('Erro ao salvar progresso');
+    } finally {
+      setCompleting(false);
     }
-  };
+  }
+
+  if (loading) return <div>Carregando...</div>;
+  if (!tarefa) return null;
 
   return (
-    <div>
-      <button onClick={() => navigate('/dashboard')}>
-        <ArrowLeft size={18} /> Voltar
-      </button>
+    <div className="daily-task-container">
+      <h1>Dia {tarefa.dia}</h1>
+      <h2>{tarefa.titulo}</h2>
+      <p>{tarefa.objetivo}</p>
 
-      <h1>Dia {dia}</h1>
-
-      <button onClick={handleComplete}>
-        <CheckCircle size={18} /> Concluir dia
+      <button onClick={handleComplete} disabled={completing}>
+        {completing ? 'Salvando...' : 'Concluir Dia'}
       </button>
     </div>
   );
