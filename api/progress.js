@@ -10,26 +10,25 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// ==============================
+// Auth helper
+// ==============================
 function verifyToken(req) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return null;
 
   try {
-    return jwt.verify(authHeader.substring(7), JWT_SECRET);
+    return jwt.verify(auth.slice(7), JWT_SECRET);
   } catch {
     return null;
   }
 }
 
 // ==============================
-// GET / POST progress
+// GET /api/progress/:userId
 // ==============================
-export default async function progressHandler(req, res) {
+export async function getProgress(req, res) {
   const decoded = verifyToken(req);
-
   if (!decoded) {
     return res.status(401).json({ message: 'Token inválido' });
   }
@@ -37,84 +36,96 @@ export default async function progressHandler(req, res) {
   const userId = decoded.id;
 
   try {
-    // ==========================
-    // GET - Buscar progresso
-    // ==========================
-    if (req.method === 'GET') {
-      let result = await pool.query(
-        'SELECT completed_days, current_day FROM user_progress WHERE user_id = $1',
-        [userId]
-      );
+    const { rows } = await pool.query(
+      `
+      SELECT
+        COALESCE(array_length(completed_days, 1), 0) AS dias_concluidos,
+        COALESCE(current_day, 1) AS dia_atual
+      FROM user_progress
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
 
-      // 👉 CRIA O REGISTRO SE NÃO EXISTIR
-      if (result.rows.length === 0) {
-        await pool.query(
-          `
-          INSERT INTO user_progress (user_id, completed_days, current_day)
-          VALUES ($1, $2, $3)
-          `,
-          [userId, [], 1]
-        );
-
-        return res.json({
-          dias_concluidos: [],
-          dia_atual: 1,
-          porcentagem_conclusao: 0
-        });
-      }
-
-      const progress = result.rows[0];
-      const completed = progress.completed_days || [];
-
+    if (rows.length === 0) {
       return res.json({
-        dias_concluidos: completed,
-        dia_atual: progress.current_day || 1,
-        porcentagem_conclusao: Math.round((completed.length / 30) * 100)
+        dias_concluidos: 0,
+        dia_atual: 1,
+        porcentagem_conclusao: 0
       });
     }
 
-    // ==========================
-    // POST - Concluir dia
-    // ==========================
-    if (req.method === 'POST') {
-      const { dia } = req.body;
+    const dias = Number(rows[0].dias_concluidos);
+    const diaAtual = Number(rows[0].dia_atual);
 
-      const result = await pool.query(
-        'SELECT completed_days FROM user_progress WHERE user_id = $1',
-        [userId]
-      );
+    return res.json({
+      dias_concluidos: dias,
+      dia_atual: diaAtual,
+      porcentagem_conclusao: Math.round((dias / 30) * 100)
+    });
 
-      let completedDays = result.rows[0]?.completed_days || [];
+  } catch (err) {
+    console.error('[GET PROGRESS]', err);
+    return res.status(500).json({ message: 'Erro interno' });
+  }
+}
 
-      if (!completedDays.includes(dia)) {
-        completedDays.push(dia);
-      }
+// ==============================
+// POST /api/progress/complete
+// ==============================
+export async function completeDay(req, res) {
+  const decoded = verifyToken(req);
+  if (!decoded) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
 
-      const nextDay = completedDays.length + 1;
+  const userId = decoded.id;
+  const { dia } = req.body;
 
-      await pool.query(
-        `
-        UPDATE user_progress
-        SET completed_days = $1,
-            current_day = $2,
-            last_updated = NOW()
-        WHERE user_id = $3
-        `,
-        [completedDays, nextDay, userId]
-      );
+  if (!Number.isInteger(dia) || dia < 1 || dia > 30) {
+    return res.status(400).json({ message: 'Dia inválido' });
+  }
 
-      return res.json({
-        success: true,
-        dias_concluidos: completedDays,
-        dia_atual: nextDay,
-        porcentagem_conclusao: Math.round((completedDays.length / 30) * 100)
-      });
-    }
+  try {
+    const { rows } = await pool.query(
+      `
+      INSERT INTO user_progress (user_id, completed_days, current_day)
+      VALUES ($1, ARRAY[$2], GREATEST($2 + 1, 1))
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        completed_days = (
+          SELECT ARRAY(
+            SELECT DISTINCT d
+            FROM unnest(
+              user_progress.completed_days || EXCLUDED.completed_days
+            ) AS d
+            ORDER BY d
+          )
+        ),
+        current_day = GREATEST(
+          user_progress.current_day,
+          EXCLUDED.current_day
+        ),
+        last_updated = NOW()
+      RETURNING
+        array_length(completed_days, 1) AS dias_concluidos,
+        current_day
+      `,
+      [userId, dia]
+    );
 
-    return res.status(405).json({ message: 'Método não permitido' });
+    const dias = Number(rows[0].dias_concluidos);
+    const diaAtual = Number(rows[0].current_day);
 
-  } catch (error) {
-    console.error('[PROGRESS ERROR]', error);
+    return res.json({
+      success: true,
+      dias_concluidos: dias,
+      dia_atual: diaAtual,
+      porcentagem_conclusao: Math.round((dias / 30) * 100)
+    });
+
+  } catch (err) {
+    console.error('[COMPLETE DAY]', err);
     return res.status(500).json({ message: 'Erro interno' });
   }
 }
