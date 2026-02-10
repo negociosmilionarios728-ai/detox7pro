@@ -1,96 +1,45 @@
-import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
-// ==============================
-// Setup básico
-// ==============================
+// Rotas API
+import progressHandler from './api/progress.js';
+import loginHandler from './api/login.js';
+import registerHandler from './api/register.js';
+import tasksHandler from './api/tasks.js';
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
+// Resolver __dirname no ESModule
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ==============================
 // Middlewares
-// ==============================
 app.use(cors());
 app.use(express.json());
 
-// Log simples (ajuda muito no Railway)
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
-
-// ==============================
-// Importação das APIs
-// ==============================
-import loginHandler from './api/login.js';
-import registerHandler from './api/register.js';
-import forgotPasswordHandler from './api/forgot-password.js';
-import getPasswordsHandler from './api/get-passwords.js';
-import savePasswordHandler from './api/save-password.js';
-
-// ✅ PROGRESSO — export default (bate com progress.js)
-import progressHandler from './api/progress.js';
-
-// ==============================
-// Rotas API
-// ==============================
-
-// Auth
-app.post('/api/register', registerHandler);
-app.post('/api/auth/register', registerHandler);
-
+// =======================
+// ROTAS DE API
+// =======================
 app.post('/api/login', loginHandler);
-app.post('/api/auth/login', loginHandler);
-
-app.post('/api/forgot-password', forgotPasswordHandler);
-app.post('/api/auth/forgot-password', forgotPasswordHandler);
-
-// Passwords
-app.get('/api/passwords', getPasswordsHandler);
-app.post('/api/passwords', savePasswordHandler);
-
-// ✅ Progresso (GET e POST no mesmo handler)
+app.post('/api/register', registerHandler);
 app.get('/api/progress', progressHandler);
 app.post('/api/progress', progressHandler);
+app.get('/api/tasks/:dia', tasksHandler);
 
-// Health check
-app.get('/api/health', (_, res) => {
-  res.json({ status: 'ok' });
+// =======================
+// SERVIR FRONTEND (VITE)
+// =======================
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// React Router fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// ==============================
-// Frontend (SPA)
-// ==============================
-const publicPath = path.join(__dirname, 'public_html');
-const distPath = path.join(__dirname, 'dist');
-
-app.use(express.static(publicPath));
-app.use(express.static(distPath));
-
-// ==============================
-// Catch-all (SPA)
-// ==============================
-app.use((req, res) => {
-  if (req.path.startsWith('/api')) {
-    return res.status(404).json({ message: 'API route not found' });
-  }
-
-  res.sendFile(path.join(publicPath, 'index.html'), err => {
-    if (err) {
-      res.status(404).send('Frontend não encontrado');
-    }
-  });
-});
-
-// ==============================
-// Start server
-// ==============================
+// Start
 app.listen(PORT, () => {
   console.log(`🚀 Server rodando na porta ${PORT}`);
 });
