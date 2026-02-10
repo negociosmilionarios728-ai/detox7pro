@@ -34,8 +34,8 @@ import forgotPasswordHandler from './api/forgot-password.js';
 import getPasswordsHandler from './api/get-passwords.js';
 import savePasswordHandler from './api/save-password.js';
 
-// 🔥 IMPORT CORRETO (named exports)
-import { getProgress, completeDay } from './api/progress.js';
+// ✅ PROGRESSO — DEFAULT EXPORT
+import progressHandler from './api/progress.js';
 
 // ==============================
 // Rotas API
@@ -55,9 +55,9 @@ app.post('/api/auth/forgot-password', forgotPasswordHandler);
 app.get('/api/passwords', getPasswordsHandler);
 app.post('/api/passwords', savePasswordHandler);
 
-// ✅ Progresso (BATENDO COM O FRONTEND)
-app.get('/api/progress/:userId', getProgress);
-app.post('/api/progress/complete', completeDay);
+// ✅ Progresso (FRONTEND ESPERA ISSO)
+app.get('/api/progress', progressHandler);
+app.post('/api/progress', progressHandler);
 
 // Health check
 app.get('/api/health', (_, res) => {
@@ -65,7 +65,7 @@ app.get('/api/health', (_, res) => {
 });
 
 // ==============================
-// Frontend
+// Frontend (SPA)
 // ==============================
 const publicPath = path.join(__dirname, 'public_html');
 const distPath = path.join(__dirname, 'dist');
@@ -74,16 +74,14 @@ app.use(express.static(publicPath));
 app.use(express.static(distPath));
 
 // ==============================
-// Catch-all (SPA)
+// Catch-all
 // ==============================
 app.use((req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ message: 'API route not found' });
   }
 
-  const indexFile = path.join(publicPath, 'index.html');
-
-  res.sendFile(indexFile, err => {
+  res.sendFile(path.join(publicPath, 'index.html'), err => {
     if (err) {
       res.status(404).send('Frontend não encontrado');
     }
@@ -96,3 +94,4 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server rodando na porta ${PORT}`);
 });
+
