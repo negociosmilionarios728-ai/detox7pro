@@ -9,6 +9,7 @@ function DailyTask() {
   const { user, token, loading } = useAuth();
 
   const [task, setTask] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (loading) return;
@@ -29,17 +30,36 @@ function DailyTask() {
         }
       });
 
+      if (!response.ok) {
+        throw new Error('Erro ao buscar tarefa');
+      }
+
       const data = await response.json();
       setTask(data);
     } catch (err) {
-      console.error('Erro ao carregar tarefa');
+      console.error(err);
+      setError('Erro ao carregar tarefa');
     }
   };
 
-  if (!task) return null;
+  if (error) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>{error}</h2>
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>Carregando tarefa...</h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="task-container">
+    <div style={{ padding: '40px' }}>
       <h1>Dia {dia}</h1>
       <h2>{task.titulo}</h2>
       <p>{task.descricao}</p>
