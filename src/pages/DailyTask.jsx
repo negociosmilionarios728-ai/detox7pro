@@ -1,70 +1,84 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './DailyTask.css';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "./DailyTask.css";
 
-function DailyTask() {
+export default function DailyTask() {
   const { dia } = useParams();
-  const navigate = useNavigate();
-  const { user, token, loading } = useAuth();
+  const { token } = useAuth();
 
-  const [task, setTask] = useState(null);
-  const [error, setError] = useState(null);
+  const [tarefa, setTarefa] = useState(null);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    if (loading) return;
+    fetch(`/api/tasks/${dia}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => setTarefa(data))
+      .catch(() => setErro("Erro ao carregar tarefa"));
+  }, [dia, token]);
 
-    if (!user || !token) {
-      navigate('/login');
-      return;
-    }
-
-    carregarTarefa();
-  }, [loading, user, token]);
-
-  const carregarTarefa = async () => {
-    try {
-      const response = await fetch(`/api/tasks/${dia}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao buscar tarefa');
-      }
-
-      const data = await response.json();
-      setTask(data);
-    } catch (err) {
-      console.error(err);
-      setError('Erro ao carregar tarefa');
-    }
-  };
-
-  if (error) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>{error}</h2>
-      </div>
-    );
+  if (erro) {
+    return <h2 style={{ textAlign: "center", marginTop: "50px" }}>{erro}</h2>;
   }
 
-  if (!task) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Carregando tarefa...</h2>
-      </div>
-    );
+  if (!tarefa) {
+    return <h2 style={{ textAlign: "center", marginTop: "50px" }}>Carregando...</h2>;
   }
 
   return (
-    <div style={{ padding: '40px' }}>
-      <h1>Dia {dia}</h1>
-      <h2>{task.titulo}</h2>
-      <p>{task.descricao}</p>
+    <div className="daily-task-container">
+      
+      <div className="task-main">
+        <div className="task-title-section">
+          <div className="day-number">Dia {dia}</div>
+          <h1>{tarefa.titulo}</h1>
+          <p className="objective">{tarefa.descricao}</p>
+        </div>
+
+        <div className="task-content">
+
+          <div className="card exercise-card card">
+            <div className="card-header">
+              <h2>Exercício do Dia</h2>
+            </div>
+            <p className="exercise-description">
+              {tarefa.exercicio || "Exercício não informado."}
+            </p>
+          </div>
+
+          <div className="card recipe-card card">
+            <div className="card-header">
+              <h2>Receita Detox</h2>
+            </div>
+
+            <h3 className="recipe-name">
+              {tarefa.receita?.nome || "Receita especial"}
+            </h3>
+
+            <div className="recipe-section">
+              <h4>Ingredientes</h4>
+              <p>{tarefa.receita?.ingredientes || "Não informado."}</p>
+            </div>
+
+            <div className="recipe-section">
+              <h4>Modo de preparo</h4>
+              <p>{tarefa.receita?.modo_preparo || "Não informado."}</p>
+            </div>
+
+          </div>
+        </div>
+
+        <div className="task-actions">
+          <button className="btn btn-primary btn-complete">
+            Marcar como Concluído
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default DailyTask;
