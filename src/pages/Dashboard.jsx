@@ -1,17 +1,31 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Leaf,
   LogOut,
   ClipboardList,
   Salad,
-  Camera
-} from "lucide-react";
-import "./Dashboard.css";
+  Camera,
+  BarChart2,
+  Trophy,
+  BookOpen
+} from 'lucide-react';
+import './Dashboard.css';
+
+const motivationalQuotes = [
+  "Cada dia é uma nova oportunidade de cuidar de você!",
+  "Você está mais forte do que imagina!",
+  "Pequenos passos levam a grandes transformações!",
+  "Seu corpo agradece cada escolha saudável!",
+  "Acredite no seu potencial de mudança!",
+  "Você merece se sentir bem!",
+  "A jornada de mil quilômetros começa com um único passo!",
+  "Seja gentil com você mesmo neste processo!"
+];
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [progresso, setProgresso] = useState({
@@ -20,67 +34,97 @@ export default function Dashboard() {
     porcentagem_conclusao: 0
   });
 
+  const [loading, setLoading] = useState(true);
+
+  const [quote] = useState(
+    () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
+  );
+
   useEffect(() => {
+    if (authLoading) return;
+
+    if (!user || !token) {
+      navigate('/login');
+      return;
+    }
+
     carregarProgresso();
-  }, []);
+  }, [authLoading, user, token]);
 
   const carregarProgresso = async () => {
     try {
-      const response = await fetch("/api/progress", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
+      const response = await fetch('/api/progress', {
+        headers: { Authorization: `Bearer ${token}` }
       });
+
+      if (!response.ok) throw new Error();
 
       const data = await response.json();
 
-      setProgresso(data);
-    } catch (error) {
-      console.error("Erro ao carregar progresso", error);
+      setProgresso({
+        dias_concluidos: data.dias_concluidos || [],
+        dia_atual: data.dia_atual || 1,
+        porcentagem_conclusao: data.porcentagem_conclusao || 0
+      });
+    } catch {
+      setProgresso({
+        dias_concluidos: [],
+        dia_atual: 1,
+        porcentagem_conclusao: 0
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const dias = progresso.dias_concluidos?.length || 0;
-  const porcentagem = progresso.porcentagem_conclusao || 0;
-  const restantes = 30 - dias;
+  if (authLoading || loading) {
+    return <div className="dashboard-wrapper" />;
+  }
+
+  const diasConcluidos = progresso.dias_concluidos;
+  const diaAtual = progresso.dia_atual;
+  const porcentagem = progresso.porcentagem_conclusao;
 
   return (
     <div className="dashboard-wrapper">
+
       <header className="dashboard-header">
         <div className="logo">
-          <Leaf size={22} />
+          <Leaf size={20} />
           <span>DETOX 7PRO</span>
         </div>
-        <button className="logout-btn" onClick={logout}>
-          <LogOut size={16} /> Sair
+        <button className="logout-btn" onClick={() => {
+          logout();
+          navigate('/login');
+        }}>
+          <LogOut size={16}/> Sair
         </button>
       </header>
 
-      <main className="dashboard-content">
-        <h1>Olá, {user?.nome?.split(" ")[0]}!</h1>
-        <p className="subtitle">
-          Você está mais forte do que imagina!
-        </p>
+      <div className="dashboard-content">
 
-        {/* CARD PROGRESSO */}
+        <h1>Olá, {user?.nome.split(' ')[0]}!</h1>
+        <p className="subtitle">{quote}</p>
+
         <div className="progress-card">
+
           <div className="progress-top">
             <h2>Seu Progresso</h2>
-            <span className="badge">Dia {progresso.dia_atual} de 30</span>
+            <span className="badge">Dia {diaAtual} de 30</span>
           </div>
 
           <div className="progress-stats">
             <div>
-              <h3>{dias}</h3>
-              <span>Dias Concluídos</span>
+              <h3>{diasConcluidos.length}</h3>
+              <p>Dias Concluídos</p>
             </div>
             <div>
               <h3>{Math.round(porcentagem)}%</h3>
-              <span>Completo</span>
+              <p>Completo</p>
             </div>
             <div>
-              <h3>{restantes}</h3>
-              <span>Dias Restantes</span>
+              <h3>{30 - diasConcluidos.length}</h3>
+              <p>Dias Restantes</p>
             </div>
           </div>
 
@@ -97,36 +141,29 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* CARDS ABAIXO */}
         <div className="cards-grid">
-          <div
-            className="action-card"
-            onClick={() => navigate(`/tarefa/${progresso.dia_atual}`)}
-          >
-            <ClipboardList size={40} />
+
+          <div className="action-card" onClick={() => navigate(`/tarefa/${diaAtual}`)}>
+            <ClipboardList size={28}/>
             <h3>Tarefa de Hoje</h3>
             <p>Veja sua tarefa diária</p>
           </div>
 
-          <div
-            className="action-card"
-            onClick={() => navigate("/receitas")}
-          >
-            <Salad size={40} />
+          <div className="action-card" onClick={() => navigate('/receitas')}>
+            <Salad size={28}/>
             <h3>Receitas</h3>
             <p>Explore receitas detox</p>
           </div>
 
-          <div
-            className="action-card"
-            onClick={() => navigate("/analise-calorias")}
-          >
-            <Camera size={40} />
+          <div className="action-card" onClick={() => navigate('/analise-calorias')}>
+            <Camera size={28}/>
             <h3>Análise de Calorias</h3>
             <p>Analise seu prato</p>
           </div>
+
         </div>
-      </main>
+
+      </div>
     </div>
   );
 }
