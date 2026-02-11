@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 import Login from './pages/Login';
@@ -42,82 +42,80 @@ function PublicRoute({ children }) {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Públicas */}
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
+      <Routes>
+        {/* Públicas */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-          {/* Protegidas */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+        {/* Protegidas */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/tarefa/:dia"
-            element={
-              <ProtectedRoute>
-                <DailyTask />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/tarefa/:dia"
+          element={
+            <ProtectedRoute>
+              <DailyTask />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/receitas"
-            element={
-              <ProtectedRoute>
-                <Recipes />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/receitas"
+          element={
+            <ProtectedRoute>
+              <Recipes />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/progresso"
-            element={
-              <ProtectedRoute>
-                <Progress />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/progresso"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/ebook"
-            element={
-              <ProtectedRoute>
-                <Ebook />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/ebook"
+          element={
+            <ProtectedRoute>
+              <Ebook />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/analise-calorias"
-            element={
-              <ProtectedRoute>
-                <CalorieAnalysis />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/analise-calorias"
+          element={
+            <ProtectedRoute>
+              <CalorieAnalysis />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* Root inteligente */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Root */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
 
-        <ServerStatus />
-      </BrowserRouter>
+      <ServerStatus />
     </AuthProvider>
   );
 }
