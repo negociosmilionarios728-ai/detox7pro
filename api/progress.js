@@ -1,20 +1,40 @@
 import jwt from 'jsonwebtoken';
-import pool from '../db.js'; // ou ajuste conforme seu projeto
+import pool from '../db.js';
 
 export default async function progressHandler(req, res) {
   try {
     const authHeader = req.headers.authorization;
+
     if (!authHeader) {
       return res.status(401).json({ error: 'Token não fornecido' });
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
 
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    // 🔥 CORREÇÃO AQUI
+    const userId = decoded.id || decoded.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'ID do usuário não encontrado no token' });
+    }
+
+    // =========================
+    // GET PROGRESSO
+    // =========================
     if (req.method === 'GET') {
       const result = await pool.query(
-        'SELECT dias_concluidos, dia_atual, porcentagem_conclusao FROM progress WHERE user_id = $1',
+        `
+        SELECT dias_concluidos, dia_atual, porcentagem_conclusao
+        FROM progress
+        WHERE user_id = $1
+        `,
         [userId]
       );
 
@@ -29,11 +49,32 @@ export default async function progressHandler(req, res) {
       return res.json(result.rows[0]);
     }
 
+    // =========================
+    // POST PROGRESSO
+    // =========================
     if (req.method === 'POST') {
       const { dia } = req.body;
 
-      // lógica simples (exemplo)
-      const diasConcluidos = [dia];
+      if (!dia) {
+        return res.status(400).json({ error: 'Dia não informado' });
+      }
+
+      // Buscar progresso atual
+      const existing = await pool.query(
+        'SELECT dias_concluidos FROM progress WHERE user_id = $1',
+        [userId]
+      );
+
+      let diasConcluidos = [];
+
+      if (existing.rows.length > 0) {
+        diasConcluidos = existing.rows[0].dias_concluidos || [];
+      }
+
+      if (!diasConcluidos.includes(dia)) {
+        diasConcluidos.push(dia);
+      }
+
       const porcentagem = (diasConcluidos.length / 30) * 100;
 
       await pool.query(
@@ -52,9 +93,10 @@ export default async function progressHandler(req, res) {
       return res.json({ success: true });
     }
 
-    res.status(405).end();
+    return res.status(405).end();
+
   } catch (err) {
-    console.error('[API Progress]', err);
-    res.status(500).json({ error: 'Erro interno' });
+    console.error('[API Progress ERROR]', err);
+    return res.status(500).json({ error: 'Erro interno no servidor' });
   }
 }
