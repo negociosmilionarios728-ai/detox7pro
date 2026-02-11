@@ -3,23 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-
-  // 🔥 ESSENCIAL PARA PRODUÇÃO COM EXPRESS
   base: '/',
-
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
-    emptyOutDir: true,
-  },
-
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
-  },
+    emptyOutDir: true
+  }
 })
