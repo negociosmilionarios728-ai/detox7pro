@@ -1,31 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Leaf,
   LogOut,
   ClipboardList,
   Salad,
-  Camera,
-  BarChart2,
-  Trophy,
-  BookOpen
-} from 'lucide-react';
-import './Dashboard.css';
-
-const motivationalQuotes = [
-  "Cada dia é uma nova oportunidade de cuidar de você!",
-  "Você está mais forte do que imagina!",
-  "Pequenos passos levam a grandes transformações!",
-  "Seu corpo agradece cada escolha saudável!",
-  "Acredite no seu potencial de mudança!",
-  "Você merece se sentir bem!",
-  "A jornada de mil quilômetros começa com um único passo!",
-  "Seja gentil com você mesmo neste processo!"
-];
+  Camera
+} from "lucide-react";
+import "./Dashboard.css";
 
 export default function Dashboard() {
-  const { user, logout, token, loading: authLoading } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [progresso, setProgresso] = useState({
@@ -34,168 +20,111 @@ export default function Dashboard() {
     porcentagem_conclusao: 0
   });
 
-  const [loading, setLoading] = useState(true);
-
-  const [quote] = useState(
-    () => motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]
-  );
-
-  // ===============================
-  // CARREGAR PROGRESSO (API = VERDADE)
-  // ===============================
   useEffect(() => {
-    if (authLoading) return;
-
-    if (!user || !token) {
-      navigate('/login');
-      return;
-    }
-
     carregarProgresso();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, token]);
+  }, []);
 
   const carregarProgresso = async () => {
     try {
-      const response = await fetch('/api/progress', {
+      const response = await fetch("/api/progress", {
         headers: {
-          Authorization: `Bearer ${token}`
-        },
-        cache: 'no-store'
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
       });
-
-      if (!response.ok) {
-        throw new Error('Erro ao buscar progresso');
-      }
 
       const data = await response.json();
 
-      setProgresso({
-        dias_concluidos: data.dias_concluidos || [],
-        dia_atual: data.dia_atual || 1,
-        porcentagem_conclusao: data.porcentagem_conclusao || 0
-      });
+      setProgresso(data);
     } catch (error) {
-      console.error('[Dashboard] Erro ao carregar progresso:', error);
-      setProgresso({
-        dias_concluidos: [],
-        dia_atual: 1,
-        porcentagem_conclusao: 0
-      });
-    } finally {
-      setLoading(false);
+      console.error("Erro ao carregar progresso", error);
     }
   };
 
-  const handleLogout = () => {
-    if (window.confirm('Tem certeza que deseja sair?')) {
-      logout();
-      navigate('/login');
-    }
-  };
+  const dias = progresso.dias_concluidos?.length || 0;
+  const porcentagem = progresso.porcentagem_conclusao || 0;
+  const restantes = 30 - dias;
 
-  // ===============================
-  // ESTADOS DE TELA
-  // ===============================
-  if (authLoading || loading) {
-    return (
-      <div className="loading-container">
-        <div className="spinner" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
-
-  const diasConcluidos = progresso.dias_concluidos;
-  const diaAtual = progresso.dia_atual;
-  const porcentagem = progresso.porcentagem_conclusao;
-
-  // ===============================
-  // RENDER
-  // ===============================
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-wrapper">
       <header className="dashboard-header">
-        <div className="container">
-          <div className="header-content">
-            <div className="logo-small">
-              <Leaf size={24} />
-              <span>DETOX 7PRO</span>
-            </div>
-            <button className="btn btn-ghost" onClick={handleLogout}>
-              <LogOut size={18} /> Sair
-            </button>
-          </div>
+        <div className="logo">
+          <Leaf size={22} />
+          <span>DETOX 7PRO</span>
         </div>
+        <button className="logout-btn" onClick={logout}>
+          <LogOut size={16} /> Sair
+        </button>
       </header>
 
-      <main className="dashboard-main">
-        <div className="container">
-          <h1>Olá, {user.nome.split(' ')[0]}!</h1>
-          <p className="quote">{quote}</p>
+      <main className="dashboard-content">
+        <h1>Olá, {user?.nome?.split(" ")[0]}!</h1>
+        <p className="subtitle">
+          Você está mais forte do que imagina!
+        </p>
 
-          <div className="progress-card">
-            <div className="progress-header">
-              <h2>Seu Progresso</h2>
-              <span className="day-badge">Dia {diaAtual} de 30</span>
+        {/* CARD PROGRESSO */}
+        <div className="progress-card">
+          <div className="progress-top">
+            <h2>Seu Progresso</h2>
+            <span className="badge">Dia {progresso.dia_atual} de 30</span>
+          </div>
+
+          <div className="progress-stats">
+            <div>
+              <h3>{dias}</h3>
+              <span>Dias Concluídos</span>
             </div>
-
-            <div className="stats">
-              <div>
-                <strong>{diasConcluidos.length}</strong>
-                <span>Dias concluídos</span>
-              </div>
-              <div>
-                <strong>{Math.round(porcentagem)}%</strong>
-                <span>Completo</span>
-              </div>
-              <div>
-                <strong>{30 - diasConcluidos.length}</strong>
-                <span>Dias restantes</span>
-              </div>
+            <div>
+              <h3>{Math.round(porcentagem)}%</h3>
+              <span>Completo</span>
             </div>
+            <div>
+              <h3>{restantes}</h3>
+              <span>Dias Restantes</span>
+            </div>
+          </div>
 
+          <div className="progress-bar-wrapper">
             <div className="progress-bar">
               <div
-                className="progress-bar-fill"
+                className="progress-fill"
                 style={{ width: `${porcentagem}%` }}
               />
             </div>
+            <span className="progress-percent">
+              {Math.round(porcentagem)}%
+            </span>
+          </div>
+        </div>
+
+        {/* CARDS ABAIXO */}
+        <div className="cards-grid">
+          <div
+            className="action-card"
+            onClick={() => navigate(`/tarefa/${progresso.dia_atual}`)}
+          >
+            <ClipboardList size={40} />
+            <h3>Tarefa de Hoje</h3>
+            <p>Veja sua tarefa diária</p>
           </div>
 
-          <div className="actions">
-            <button onClick={() => navigate(`/tarefa/${diaAtual}`)}>
-              <ClipboardList /> Ver tarefa
-            </button>
-
-            <button onClick={() => navigate('/receitas')}>
-              <Salad /> Receitas
-            </button>
-
-            <button onClick={() => navigate('/analise-calorias')}>
-              <Camera /> Analisar prato
-            </button>
-
-            <button onClick={() => navigate('/progresso')}>
-              <BarChart2 /> Meu progresso
-            </button>
-
-            <button onClick={() => navigate('/ebook')}>
-              <BookOpen /> Ebook
-            </button>
+          <div
+            className="action-card"
+            onClick={() => navigate("/receitas")}
+          >
+            <Salad size={40} />
+            <h3>Receitas</h3>
+            <p>Explore receitas detox</p>
           </div>
 
-          {diasConcluidos.length === 30 && (
-            <div className="final">
-              <Trophy size={48} />
-              <h2>Desafio completo!</h2>
-              <p>Parabéns! Você concluiu os 30 dias do Detox 7PRO.</p>
-            </div>
-          )}
+          <div
+            className="action-card"
+            onClick={() => navigate("/analise-calorias")}
+          >
+            <Camera size={40} />
+            <h3>Análise de Calorias</h3>
+            <p>Analise seu prato</p>
+          </div>
         </div>
       </main>
     </div>
