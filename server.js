@@ -3,10 +3,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import cors from 'cors'
 
-// API handlers
+// ===== IMPORTAÇÃO DOS HANDLERS =====
 import progressHandler from './api/progress.js'
 import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
+import tasksHandler from './api/tasks.js'
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -17,41 +18,24 @@ const __dirname = path.dirname(__filename)
 app.use(cors())
 app.use(express.json())
 
-// ===== API =====
+// ==============================
+// ===== ROTAS DA API =====
+// ==============================
+
 app.post('/api/login', loginHandler)
 app.post('/api/register', registerHandler)
+
 app.get('/api/progress', progressHandler)
 app.post('/api/progress', progressHandler)
 
-// ✅ NOVA ROTA DE TAREFAS
-app.get('/api/tasks/:dia', (req, res) => {
-  const { dia } = req.params
+// ✅ ROTA CORRETA DE TASKS (AGORA USA O HANDLER REAL)
+app.get('/api/tasks/:dia', tasksHandler)
 
-  const tarefas = {
-    1: {
-      titulo: "Beba 2L de água",
-      descricao: "Hoje você deve beber pelo menos 2 litros de água."
-    },
-    2: {
-      titulo: "Evite açúcar",
-      descricao: "Evite alimentos com açúcar refinado."
-    },
-    3: {
-      titulo: "Caminhe 20 minutos",
-      descricao: "Faça uma caminhada leve de pelo menos 20 minutos."
-    }
-  }
 
-  const tarefa = tarefas[dia]
+// ==============================
+// ===== FRONTEND (SPA) =====
+// ==============================
 
-  if (!tarefa) {
-    return res.status(404).json({ error: 'Tarefa não encontrada' })
-  }
-
-  res.json(tarefa)
-})
-
-// ===== FRONTEND =====
 app.use(express.static(path.join(__dirname, 'dist')))
 
 // SPA fallback
