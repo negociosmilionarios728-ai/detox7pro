@@ -39,7 +39,18 @@ function Progress() {
       }
 
       const data = await response.json();
-      setProgresso(data);
+
+      // 🔥 Adaptando para estrutura nova do banco
+      const diasConcluidos = data.completed_days || [];
+      const diaAtual = data.current_day || 1;
+      const porcentagem = (diasConcluidos.length / 30) * 100;
+
+      setProgresso({
+        dias_concluidos: diasConcluidos,
+        dia_atual: diaAtual,
+        porcentagem_conclusao: porcentagem
+      });
+
     } catch (error) {
       console.error('[Progress] Erro ao buscar progresso:', error);
       setProgresso({
@@ -149,52 +160,6 @@ function Progress() {
             })}
           </div>
 
-          {diasConcluidos.length >= 7 && (
-            <div className="milestones-section">
-              <h2>
-                <Trophy
-                  size={28}
-                  style={{
-                    marginRight: '10px',
-                    verticalAlign: 'middle',
-                    color: '#f59e0b'
-                  }}
-                />
-                Conquistas
-              </h2>
-
-              <div className="milestones-grid">
-                {diasConcluidos.length >= 7 && (
-                  <div className="milestone-item card">
-                    <Target size={40} color="#10b981" />
-                    <h3>1 Semana</h3>
-                    <p>Primeira semana completa!</p>
-                  </div>
-                )}
-                {diasConcluidos.length >= 14 && (
-                  <div className="milestone-item card">
-                    <Star size={40} color="#10b981" />
-                    <h3>2 Semanas</h3>
-                    <p>Metade do desafio!</p>
-                  </div>
-                )}
-                {diasConcluidos.length >= 21 && (
-                  <div className="milestone-item card">
-                    <Gem size={40} color="#10b981" />
-                    <h3>21 Dias</h3>
-                    <p>Novo hábito formado!</p>
-                  </div>
-                )}
-                {diasConcluidos.length === 30 && (
-                  <div className="milestone-item card champion">
-                    <Trophy size={40} color="#f59e0b" />
-                    <h3>30 Dias</h3>
-                    <p>Desafio completo!</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>
