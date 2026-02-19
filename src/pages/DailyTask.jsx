@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { ArrowLeft } from "lucide-react";
 import "./DailyTask.css";
 
 export default function DailyTask() {
   const { dia } = useParams();
+  const navigate = useNavigate();
   const { token } = useAuth();
 
   const [tarefa, setTarefa] = useState(null);
@@ -39,6 +41,7 @@ export default function DailyTask() {
             setConcluido(true);
           }
         }
+
       } catch {
         setErro("Erro ao carregar tarefa");
       }
@@ -61,13 +64,14 @@ export default function DailyTask() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ dia: Number(dia) }) // ✅ CORRIGIDO AQUI
+        body: JSON.stringify({ dia: Number(dia) })
       });
 
       if (!res.ok) throw new Error();
 
       setConcluido(true);
       setMensagem("Tarefa concluída com sucesso!");
+
     } catch {
       setMensagem("Erro ao marcar como concluída.");
     } finally {
@@ -93,7 +97,29 @@ export default function DailyTask() {
 
   return (
     <div className="daily-task-container">
+
+      {/* 🔙 BOTÃO VOLTAR */}
+      <button
+        onClick={() => navigate("/dashboard")}
+        style={{
+          margin: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          background: "none",
+          border: "none",
+          color: "#0f766e",
+          fontWeight: "bold",
+          cursor: "pointer",
+          fontSize: "16px"
+        }}
+      >
+        <ArrowLeft size={18} />
+        Voltar
+      </button>
+
       <div className="task-main">
+
         <div className="task-title-section">
           <div className="day-number">Dia {dia}</div>
           <h1>{tarefa.title}</h1>
@@ -101,6 +127,7 @@ export default function DailyTask() {
         </div>
 
         <div className="task-content">
+
           <div className="card exercise-card card">
             <div className="card-header">
               <h2>Exercício do Dia</h2>
@@ -133,6 +160,7 @@ export default function DailyTask() {
               <h4>Benefícios</h4>
               <p>{tarefa.benefits || "Não informado."}</p>
             </div>
+
           </div>
         </div>
 
@@ -159,6 +187,7 @@ export default function DailyTask() {
             </p>
           )}
         </div>
+
       </div>
     </div>
   );
