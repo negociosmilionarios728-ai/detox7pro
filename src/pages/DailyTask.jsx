@@ -11,24 +11,47 @@ export default function DailyTask() {
   const [erro, setErro] = useState("");
   const [concluido, setConcluido] = useState(false);
   const [loadingConclusao, setLoadingConclusao] = useState(false);
+  const [mensagem, setMensagem] = useState("");
 
   // 🔹 Buscar tarefa
   useEffect(() => {
-    fetch(`/api/tasks/${dia}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
+    const carregarDados = async () => {
+      try {
+        const res = await fetch(`/api/tasks/${dia}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
         if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => setTarefa(data))
-      .catch(() => setErro("Erro ao carregar tarefa"));
+
+        const data = await res.json();
+        setTarefa(data);
+
+        // 🔎 Verificar se já está concluído
+        const progressoRes = await fetch("/api/progress", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (progressoRes.ok) {
+          const progresso = await progressoRes.json();
+          const diasConcluidos = progresso.completedDays || [];
+
+          if (diasConcluidos.includes(Number(dia))) {
+            setConcluido(true);
+          }
+        }
+      } catch {
+        setErro("Erro ao carregar tarefa");
+      }
+    };
+
+    carregarDados();
   }, [dia, token]);
 
   // 🔹 Marcar como concluído
   const handleConcluir = async () => {
     try {
       setLoadingConclusao(true);
+      setMensagem("");
 
       const res = await fetch("/api/progress", {
         method: "POST",
@@ -42,9 +65,9 @@ export default function DailyTask() {
       if (!res.ok) throw new Error();
 
       setConcluido(true);
-      alert("Tarefa concluída com sucesso!");
+      setMensagem("Tarefa concluída com sucesso!");
     } catch {
-      alert("Erro ao marcar como concluída");
+      setMensagem("Erro ao marcar como concluída.");
     } finally {
       setLoadingConclusao(false);
     }
@@ -126,9 +149,15 @@ export default function DailyTask() {
             {concluido
               ? "Tarefa Concluída ✔"
               : loadingConclusao
-                ? "Salvando..."
-                : "Marcar como Concluído"}
+              ? "Salvando..."
+              : "Marcar como Concluído"}
           </button>
+
+          {mensagem && (
+            <p style={{ marginTop: "15px", fontWeight: "bold" }}>
+              {mensagem}
+            </p>
+          )}
         </div>
       </div>
     </div>
