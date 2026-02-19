@@ -33,7 +33,7 @@ export default function DailyTask() {
 
         if (progressoRes.ok) {
           const progresso = await progressoRes.json();
-          const diasConcluidos = progresso.completedDays || [];
+          const diasConcluidos = progresso.completed_days || [];
 
           if (diasConcluidos.includes(Number(dia))) {
             setConcluido(true);
@@ -44,7 +44,9 @@ export default function DailyTask() {
       }
     };
 
-    carregarDados();
+    if (token) {
+      carregarDados();
+    }
   }, [dia, token]);
 
   // 🔹 Marcar como concluído
@@ -59,7 +61,7 @@ export default function DailyTask() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ day: Number(dia) })
+        body: JSON.stringify({ dia: Number(dia) }) // ✅ CORRIGIDO AQUI
       });
 
       if (!res.ok) throw new Error();
@@ -99,7 +101,6 @@ export default function DailyTask() {
         </div>
 
         <div className="task-content">
-
           <div className="card exercise-card card">
             <div className="card-header">
               <h2>Exercício do Dia</h2>
@@ -132,7 +133,6 @@ export default function DailyTask() {
               <h4>Benefícios</h4>
               <p>{tarefa.benefits || "Não informado."}</p>
             </div>
-
           </div>
         </div>
 
