@@ -1,17 +1,40 @@
-export default function tasksHandler(req, res) {
-  const dia = Number(req.params.dia);
+import pg from 'pg';
 
-  const tarefas = {
-    1: { dia: 1, titulo: 'Detox Inicial', objetivo: 'Início do processo' },
-    2: { dia: 2, titulo: 'Continuidade', objetivo: 'Manter o foco' },
-    3: { dia: 3, titulo: 'Avanço', objetivo: 'Evoluir hábitos' }
-  };
+const { Pool } = pg;
 
-  const tarefa = tarefas[dia] || {
-    dia,
-    titulo: `Dia ${dia}`,
-    objetivo: 'Siga o plano do Detox 7PRO'
-  };
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-  res.json(tarefa);
+export default async function tasksHandler(req, res) {
+  try {
+    const dia = Number(req.params.dia);
+
+    const result = await pool.query(
+      `SELECT 
+        id,
+        day,
+        title,
+        description,
+        exercise,
+        recipe_name,
+        ingredients,
+        preparation,
+        benefits
+       FROM tasks
+       WHERE day = $1`,
+      [dia]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Tarefa não encontrada' });
+    }
+
+    res.json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Erro ao buscar tarefa:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
 }
