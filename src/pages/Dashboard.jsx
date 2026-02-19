@@ -6,10 +6,7 @@ import {
   LogOut,
   ClipboardList,
   Salad,
-  Camera,
-  BarChart2,
-  Trophy,
-  BookOpen
+  Camera
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -29,9 +26,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const [progresso, setProgresso] = useState({
-    dias_concluidos: [],
-    dia_atual: 1,
-    porcentagem_conclusao: 0
+    completed_days: [],
+    current_day: 1
   });
 
   const [loading, setLoading] = useState(true);
@@ -62,15 +58,14 @@ export default function Dashboard() {
       const data = await response.json();
 
       setProgresso({
-        dias_concluidos: data.dias_concluidos || [],
-        dia_atual: data.dia_atual || 1,
-        porcentagem_conclusao: data.porcentagem_conclusao || 0
+        completed_days: data.completed_days || [],
+        current_day: data.current_day || 1
       });
+
     } catch {
       setProgresso({
-        dias_concluidos: [],
-        dia_atual: 1,
-        porcentagem_conclusao: 0
+        completed_days: [],
+        current_day: 1
       });
     } finally {
       setLoading(false);
@@ -81,9 +76,9 @@ export default function Dashboard() {
     return <div className="dashboard-wrapper" />;
   }
 
-  const diasConcluidos = progresso.dias_concluidos;
-  const diaAtual = progresso.dia_atual;
-  const porcentagem = progresso.porcentagem_conclusao;
+  const diasConcluidos = progresso.completed_days;
+  const diaAtual = progresso.current_day;
+  const porcentagem = (diasConcluidos.length / 30) * 100;
 
   return (
     <div className="dashboard-wrapper">
