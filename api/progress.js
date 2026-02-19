@@ -19,44 +19,67 @@ export default async function progressHandler(req, res) {
     if (req.method === 'GET') {
       const result = await pool.query(
         `
-        SELECT dias_concluidos, dia_atual, porcentagem_conclusao
+        SELECT current_day, completed_days, started_at
         FROM user_progress
         WHERE user_id = $1
         `,
         [userId]
       );
 
+      // Se não existir progresso, cria automaticamente
       if (result.rows.length === 0) {
-        return res.json({
-          dias_concluidos: [],
-          dia_atual: 1,
-          porcentagem_conclusao: 0
-        });
+        const newProgress = await pool.query(
+          `
+          INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
+          VALUES ($1, 1, '{}', NOW())
+          RETURNING current_day, completed_days, started_at
+          `,
+          [userId]
+        );
+
+        return res.json(newProgress.rows[0]);
       }
 
       return res.json(result.rows[0]);
     }
 
     // =========================
-    // POST
+    // POST (Marcar dia como concluído)
     // =========================
     if (req.method === 'POST') {
       const { dia } = req.body;
 
-      const diasConcluidos = [dia];
-      const porcentagem = (diasConcluidos.length / 30) * 100;
+      const result = await pool.query(
+        `
+        SELECT current_day, completed_days
+        FROM user_progress
+        WHERE user_id = $1
+        `,
+        [userId]
+      );
+
+      let completedDays = result.rows[0]?.completed_days || [];
+
+      // Garante que é array
+      if (!Array.isArray(completedDays)) {
+        completedDays = [];
+      }
+
+      // Evita duplicação
+      if (!completedDays.includes(dia)) {
+        completedDays.push(dia);
+      }
+
+      const nextDay = Math.max(...completedDays, 1) + 1;
 
       await pool.query(
         `
-        INSERT INTO user_progress (user_id, dias_concluidos, dia_atual, porcentagem_conclusao)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (user_id)
-        DO UPDATE SET
-          dias_concluidos = EXCLUDED.dias_concluidos,
-          dia_atual = EXCLUDED.dia_atual,
-          porcentagem_conclusao = EXCLUDED.porcentagem_conclusao
+        UPDATE user_progress
+        SET completed_days = $1,
+            current_day = $2
+        WHERE user_id = $3
         `,
-        [userId, diasConcluidos, dia + 1, porcentagem]
+        [completedDays, nextDay, userId]
       );
 
       return res.json({ success: true });
