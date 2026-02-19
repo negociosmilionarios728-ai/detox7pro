@@ -1,7 +1,17 @@
 .daily-task-container {
     min-height: 100vh;
     background: #ffffff;
+    display: flex;
+    justify-content: center;
 }
+
+.task-main {
+    width: 100%;
+    max-width: 900px; /* controla largura */
+    padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+/* ================= HEADER ================= */
 
 .task-header {
     background: var(--white);
@@ -9,9 +19,7 @@
     padding: var(--spacing-lg) 0;
 }
 
-.task-main {
-    padding: var(--spacing-2xl) 0;
-}
+/* ================= TITLE ================= */
 
 .task-title-section {
     text-align: center;
@@ -48,15 +56,26 @@
     font-size: 1rem;
 }
 
+/* ================= CONTENT ================= */
+
 .task-content {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
 }
 
+.card {
+    width: 100%;
+    max-width: 800px;
+}
+
+/* ================= CARD HEADER ================= */
+
 .card-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* CENTRALIZA */
     align-items: center;
     margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-md);
@@ -69,17 +88,21 @@
     margin: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .flex-center {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .section-icon {
     margin-right: 12px;
     color: var(--primary-green);
 }
+
+/* ================= EXERCISE ================= */
 
 .exercise-card {
     background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
@@ -89,7 +112,10 @@
     font-size: 1.125rem;
     line-height: 1.8;
     color: var(--gray-700);
+    text-align: center; /* CENTRALIZA TEXTO */
 }
+
+/* ================= RECIPE ================= */
 
 .recipe-card {
     background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
@@ -108,6 +134,7 @@
 
 .recipe-section {
     margin-bottom: var(--spacing-xl);
+    text-align: center; /* CENTRALIZA TUDO */
 }
 
 .recipe-section h4 {
@@ -116,6 +143,7 @@
     margin-bottom: var(--spacing-md);
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-sm);
 }
 
@@ -132,6 +160,8 @@
     border-left: 4px solid var(--primary-green);
 }
 
+/* ================= ACTION BUTTON ================= */
+
 .task-actions {
     text-align: center;
 }
@@ -141,6 +171,8 @@
     padding: 1rem 2rem;
     min-width: 300px;
 }
+
+/* ================= RESPONSIVE ================= */
 
 @media (max-width: 768px) {
     .task-title-section h1 {
@@ -153,5 +185,9 @@
 
     .btn-complete {
         min-width: 100%;
+    }
+
+    .task-main {
+        padding: var(--spacing-xl) var(--spacing-md);
     }
 }
