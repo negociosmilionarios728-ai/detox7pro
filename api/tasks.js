@@ -7,23 +7,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export default async function tasksHandler(req, res) {
-  try {
-    const dia = Number(req.params.dia);
+export default async function handler(req, res) {
+  const dia = Number(req.params.dia);
 
+  try {
     const result = await pool.query(
-      `SELECT 
-        id,
-        day,
-        title,
-        description,
-        exercise,
-        recipe_name,
-        ingredients,
-        preparation,
-        benefits
-       FROM tasks
-       WHERE day = $1`,
+      'SELECT * FROM tasks WHERE day = $1',
       [dia]
     );
 
@@ -34,7 +23,7 @@ export default async function tasksHandler(req, res) {
     res.json(result.rows[0]);
 
   } catch (error) {
-    console.error('Erro ao buscar tarefa:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao buscar tarefa' });
   }
 }
