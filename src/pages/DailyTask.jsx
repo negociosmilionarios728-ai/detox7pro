@@ -15,6 +15,7 @@ export default function DailyTask() {
   const [loadingConclusao, setLoadingConclusao] = useState(false);
   const [mensagem, setMensagem] = useState("");
 
+  // 🔹 Buscar tarefa
   useEffect(() => {
     const carregarDados = async () => {
       try {
@@ -50,6 +51,7 @@ export default function DailyTask() {
     }
   }, [dia, token]);
 
+  // 🔹 Marcar como concluído
   const handleConcluir = async () => {
     try {
       setLoadingConclusao(true);
@@ -77,11 +79,15 @@ export default function DailyTask() {
   };
 
   if (erro) {
-    return <h2 className="center-message">{erro}</h2>;
+    return (
+      <h2 className="center-message">{erro}</h2>
+    );
   }
 
   if (!tarefa) {
-    return <h2 className="center-message">Carregando...</h2>;
+    return (
+      <h2 className="center-message">Carregando...</h2>
+    );
   }
 
   return (
@@ -100,14 +106,12 @@ export default function DailyTask() {
           </button>
         </div>
 
-        {/* 🔢 Título */}
         <div className="task-title-section">
           <div className="day-number">Dia {dia}</div>
           <h1>{tarefa.title}</h1>
           <p className="objective">{tarefa.description}</p>
         </div>
 
-        {/* 📦 Conteúdo */}
         <div className="task-content">
 
           <div className="card exercise-card">
@@ -138,7 +142,7 @@ export default function DailyTask() {
               <p>{tarefa.preparation || "Não informado."}</p>
             </div>
 
-            <div className="recipe-section">
+            <div className="recipe-section benefits">
               <h4>Benefícios</h4>
               <p>{tarefa.benefits || "Não informado."}</p>
             </div>
@@ -147,10 +151,9 @@ export default function DailyTask() {
 
         </div>
 
-        {/* ✅ Botão */}
         <div className="task-actions">
           <button
-            className="btn-complete"
+            className="btn btn-primary btn-complete"
             onClick={handleConcluir}
             disabled={concluido || loadingConclusao}
           >
