@@ -26,7 +26,6 @@ export default async function progressHandler(req, res) {
         [userId]
       );
 
-      // Se não existir progresso, cria automaticamente
       if (result.rows.length === 0) {
         const newProgress = await pool.query(
           `
@@ -44,62 +43,67 @@ export default async function progressHandler(req, res) {
     }
 
     // =========================
-    // POST (Marcar dia como concluído)
+    // POST
     // =========================
-   if (req.method === 'POST') {
-  const { dia } = req.body;
+    if (req.method === 'POST') {
+      const dia = Number(req.body.dia);
 
-  const result = await pool.query(
-    `
-    SELECT current_day, completed_days
-    FROM user_progress
-    WHERE user_id = $1
-    `,
-    [userId]
-  );
+      const result = await pool.query(
+        `
+        SELECT current_day, completed_days
+        FROM user_progress
+        WHERE user_id = $1
+        `,
+        [userId]
+      );
 
-  // Se não existir registro ainda, cria primeiro
-  if (result.rows.length === 0) {
-    await pool.query(
-      `
-      INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
-      VALUES ($1, 1, '{}', NOW())
-      `,
-      [userId]
-    );
+      if (result.rows.length === 0) {
+        await pool.query(
+          `
+          INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
+          VALUES ($1, 1, '{}', NOW())
+          `,
+          [userId]
+        );
+      }
+
+      const updatedResult = await pool.query(
+        `
+        SELECT current_day, completed_days
+        FROM user_progress
+        WHERE user_id = $1
+        `,
+        [userId]
+      );
+
+      let completedDays = updatedResult.rows[0].completed_days || [];
+
+      if (!Array.isArray(completedDays)) {
+        completedDays = [];
+      }
+
+      if (!completedDays.includes(dia)) {
+        completedDays.push(dia);
+      }
+
+      const nextDay = Math.max(...completedDays, 1) + 1;
+
+      await pool.query(
+        `
+        UPDATE user_progress
+        SET completed_days = $1,
+            current_day = $2
+        WHERE user_id = $3
+        `,
+        [completedDays, nextDay, userId]
+      );
+
+      return res.json({ success: true });
+    }
+
+    res.status(405).end();
+  } catch (err) {
+    console.error('[API Progress]', err);
+    res.status(500).json({ error: 'Erro interno' });
   }
-
-  // Busca novamente após garantir que existe
-  const updatedResult = await pool.query(
-    `
-    SELECT current_day, completed_days
-    FROM user_progress
-    WHERE user_id = $1
-    `,
-    [userId]
-  );
-
-  let completedDays = updatedResult.rows[0].completed_days || [];
-
-  if (!Array.isArray(completedDays)) {
-    completedDays = [];
-  }
-
-  if (!completedDays.includes(dia)) {
-    completedDays.push(dia);
-  }
-
-  const nextDay = Math.max(...completedDays, 1) + 1;
-
-  await pool.query(
-    `
-    UPDATE user_progress
-    SET completed_days = $1,
-        current_day = $2
-    WHERE user_id = $3
-    `,
-    [completedDays, nextDay, userId]
-  );
-
-  return res.json({ success: true });
 }
