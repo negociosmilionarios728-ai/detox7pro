@@ -28,7 +28,6 @@ export default function DailyTask() {
         const data = await res.json();
         setTarefa(data);
 
-        // 🔎 Verificar se já está concluído
         const progressoRes = await fetch("/api/progress", {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -81,44 +80,31 @@ export default function DailyTask() {
 
   if (erro) {
     return (
-      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
-        {erro}
-      </h2>
+      <h2 className="center-message">{erro}</h2>
     );
   }
 
   if (!tarefa) {
     return (
-      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
-        Carregando...
-      </h2>
+      <h2 className="center-message">Carregando...</h2>
     );
   }
 
   return (
     <div className="daily-task-container">
 
-      {/* 🔙 BOTÃO VOLTAR */}
-      <button
-        onClick={() => navigate("/dashboard")}
-        style={{
-          margin: "20px",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          background: "none",
-          border: "none",
-          color: "#0f766e",
-          fontWeight: "bold",
-          cursor: "pointer",
-          fontSize: "16px"
-        }}
-      >
-        <ArrowLeft size={18} />
-        Voltar
-      </button>
-
       <div className="task-main">
+
+        {/* 🔝 Top Bar */}
+        <div className="task-top-bar">
+          <button
+            className="btn-back"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft size={18} />
+            Voltar
+          </button>
+        </div>
 
         <div className="task-title-section">
           <div className="day-number">Dia {dia}</div>
@@ -128,7 +114,7 @@ export default function DailyTask() {
 
         <div className="task-content">
 
-          <div className="card exercise-card card">
+          <div className="card exercise-card">
             <div className="card-header">
               <h2>Exercício do Dia</h2>
             </div>
@@ -137,7 +123,7 @@ export default function DailyTask() {
             </p>
           </div>
 
-          <div className="card recipe-card card">
+          <div className="card recipe-card">
             <div className="card-header">
               <h2>Receita Detox</h2>
             </div>
@@ -156,12 +142,13 @@ export default function DailyTask() {
               <p>{tarefa.preparation || "Não informado."}</p>
             </div>
 
-            <div className="recipe-section">
+            <div className="recipe-section benefits">
               <h4>Benefícios</h4>
               <p>{tarefa.benefits || "Não informado."}</p>
             </div>
 
           </div>
+
         </div>
 
         <div className="task-actions">
@@ -169,10 +156,6 @@ export default function DailyTask() {
             className="btn btn-primary btn-complete"
             onClick={handleConcluir}
             disabled={concluido || loadingConclusao}
-            style={{
-              opacity: concluido ? 0.6 : 1,
-              cursor: concluido ? "not-allowed" : "pointer"
-            }}
           >
             {concluido
               ? "Tarefa Concluída ✔"
@@ -182,7 +165,7 @@ export default function DailyTask() {
           </button>
 
           {mensagem && (
-            <p style={{ marginTop: "15px", fontWeight: "bold" }}>
+            <p className="success-message">
               {mensagem}
             </p>
           )}
