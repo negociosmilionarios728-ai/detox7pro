@@ -32,12 +32,11 @@ export default function DailyTask() {
 
   return (
     <div className="daily-task-container">
-      
       <div className="task-main">
         <div className="task-title-section">
           <div className="day-number">Dia {dia}</div>
-          <h1>{tarefa.titulo}</h1>
-          <p className="objective">{tarefa.descricao}</p>
+          <h1>{tarefa.title}</h1>
+          <p className="objective">{tarefa.description}</p>
         </div>
 
         <div className="task-content">
@@ -47,7 +46,7 @@ export default function DailyTask() {
               <h2>Exercício do Dia</h2>
             </div>
             <p className="exercise-description">
-              {tarefa.exercicio || "Exercício não informado."}
+              {tarefa.exercise || "Exercício não informado."}
             </p>
           </div>
 
@@ -57,17 +56,22 @@ export default function DailyTask() {
             </div>
 
             <h3 className="recipe-name">
-              {tarefa.receita?.nome || "Receita especial"}
+              {tarefa.recipe_name || "Receita especial"}
             </h3>
 
             <div className="recipe-section">
               <h4>Ingredientes</h4>
-              <p>{tarefa.receita?.ingredientes || "Não informado."}</p>
+              <p>{tarefa.ingredients || "Não informado."}</p>
             </div>
 
             <div className="recipe-section">
               <h4>Modo de preparo</h4>
-              <p>{tarefa.receita?.modo_preparo || "Não informado."}</p>
+              <p>{tarefa.preparation || "Não informado."}</p>
+            </div>
+
+            <div className="recipe-section">
+              <h4>Benefícios</h4>
+              <p>{tarefa.benefits || "Não informado."}</p>
             </div>
 
           </div>
