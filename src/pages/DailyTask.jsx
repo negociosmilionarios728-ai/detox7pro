@@ -9,7 +9,10 @@ export default function DailyTask() {
 
   const [tarefa, setTarefa] = useState(null);
   const [erro, setErro] = useState("");
+  const [concluido, setConcluido] = useState(false);
+  const [loadingConclusao, setLoadingConclusao] = useState(false);
 
+  // 🔹 Buscar tarefa
   useEffect(() => {
     fetch(`/api/tasks/${dia}`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -22,12 +25,45 @@ export default function DailyTask() {
       .catch(() => setErro("Erro ao carregar tarefa"));
   }, [dia, token]);
 
+  // 🔹 Marcar como concluído
+  const handleConcluir = async () => {
+    try {
+      setLoadingConclusao(true);
+
+      const res = await fetch("/api/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ day: Number(dia) })
+      });
+
+      if (!res.ok) throw new Error();
+
+      setConcluido(true);
+      alert("Tarefa concluída com sucesso!");
+    } catch {
+      alert("Erro ao marcar como concluída");
+    } finally {
+      setLoadingConclusao(false);
+    }
+  };
+
   if (erro) {
-    return <h2 style={{ textAlign: "center", marginTop: "50px" }}>{erro}</h2>;
+    return (
+      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
+        {erro}
+      </h2>
+    );
   }
 
   if (!tarefa) {
-    return <h2 style={{ textAlign: "center", marginTop: "50px" }}>Carregando...</h2>;
+    return (
+      <h2 style={{ textAlign: "center", marginTop: "50px" }}>
+        Carregando...
+      </h2>
+    );
   }
 
   return (
@@ -78,8 +114,20 @@ export default function DailyTask() {
         </div>
 
         <div className="task-actions">
-          <button className="btn btn-primary btn-complete">
-            Marcar como Concluído
+          <button
+            className="btn btn-primary btn-complete"
+            onClick={handleConcluir}
+            disabled={concluido || loadingConclusao}
+            style={{
+              opacity: concluido ? 0.6 : 1,
+              cursor: concluido ? "not-allowed" : "pointer"
+            }}
+          >
+            {concluido
+              ? "Tarefa Concluída ✔"
+              : loadingConclusao
+                ? "Salvando..."
+                : "Marcar como Concluído"}
           </button>
         </div>
       </div>
