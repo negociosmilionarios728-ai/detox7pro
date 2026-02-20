@@ -1,68 +1,61 @@
-import { nutritionTable } from './NutritionTable.js'
+import { nutritionTable } from './NutritionTable.js';
 
-// ===== FUNÇÃO NORMALIZE =====
-function normalize(text) {
+// ==============================
+// Normalizador de texto
+// ==============================
+function normalizeText(text) {
   return text
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
-// ===== FUNÇÃO PRINCIPAL =====
+// ==============================
+// Calculador principal
+// ==============================
 export function calculateMeal(description, customWeight) {
   if (!description) return null;
 
-  const normalized = normalize(description);
+  const normalizedDescription = normalizeText(description);
 
   let total = {
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-    fiber: 0
+    nome: description,
+    peso: 0,
+    calorias: 0,
+    proteinas: 0,
+    carboidratos: 0,
+    gorduras: 0,
+    fibras: 0
   };
 
-  let foodsFound = [];
+  let encontrou = false;
 
   for (const food of nutritionTable) {
-    const foodName = normalize(food.name);
+    const normalizedFoodName = normalizeText(food.name);
 
-    const foodWords = foodName
-      .split(" ")
-      .filter(word => word.length > 2);
+    if (normalizedDescription.includes(normalizedFoodName)) {
+      encontrou = true;
 
-    const match = foodWords.some(word =>
-      normalized.includes(word)
-    );
-
-    if (match) {
       const weight = customWeight || food.defaultWeight || 100;
       const multiplier = weight / 100;
 
-      total.calories += food.calories * multiplier;
-      total.protein += food.protein * multiplier;
-      total.carbs += food.carbs * multiplier;
-      total.fat += food.fat * multiplier;
-      total.fiber += food.fiber * multiplier;
-
-      foodsFound.push({
-        name: food.name,
-        weight
-      });
+      total.peso += weight;
+      total.calorias += food.calories * multiplier;
+      total.proteinas += food.protein * multiplier;
+      total.carboidratos += food.carbs * multiplier;
+      total.gorduras += food.fat * multiplier;
+      total.fibras += food.fiber * multiplier;
     }
   }
 
-  if (foodsFound.length === 0) {
-    return null;
-  }
+  if (!encontrou) return null;
 
-  return {
-    calories: Math.round(total.calories),
-    protein: Math.round(total.protein),
-    carbs: Math.round(total.carbs),
-    fat: Math.round(total.fat * 100) / 100,
-    fiber: Math.round(total.fiber),
-    foods: foodsFound,
-    totalWeight: foodsFound.reduce((acc, f) => acc + f.weight, 0)
-  };
+  // Arredondamento final
+  total.calorias = Math.round(total.calorias);
+  total.proteinas = Number(total.proteinas.toFixed(1));
+  total.carboidratos = Number(total.carboidratos.toFixed(1));
+  total.gorduras = Number(total.gorduras.toFixed(1));
+  total.fibras = Number(total.fibras.toFixed(1));
+
+  return total;
 }
