@@ -6,7 +6,7 @@ import {
   LogOut,
   ClipboardList,
   Salad,
-  Camera
+  BarChart2
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -151,9 +151,9 @@ export default function Dashboard() {
           </div>
 
           <div className="action-card" onClick={() => navigate('/analise-calorias')}>
-            <Camera size={28}/>
+            <BarChart2 size={28}/>
             <h3>Análise de Calorias</h3>
-            <p>Analise seu prato</p>
+            <p>Calcule calorias e nutrientes</p>
           </div>
 
         </div>
