@@ -1,12 +1,3 @@
-import { tabelaAlimentos } from "./NutritionData.js";
-
-function normalize(text) {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 export function calculateMeal(description, customWeight) {
   if (!description) return null;
 
@@ -22,32 +13,46 @@ export function calculateMeal(description, customWeight) {
 
   let foodsFound = [];
 
-  for (const nome in tabelaAlimentos) {
-    const normalizedFood = normalize(nome);
+  for (const food of nutritionTable) {
+    const foodName = normalize(food.name);
 
-    if (normalized.includes(normalizedFood)) {
-      const alimento = tabelaAlimentos[nome];
+    // Divide nome do alimento em palavras
+    const foodWords = foodName
+  .split(" ")
+  .filter(word => word.length > 2);
 
-      const peso = customWeight || alimento.pesoPadrao;
-      const multiplicador = peso / 100;
+    // Verifica se alguma palavra do alimento está na descrição
+    const match = foodWords.some(word =>
+      normalized.includes(word)
+    );
 
-      total.calories += alimento.calorias100g * multiplicador;
-      total.protein += alimento.proteina100g * multiplicador;
-      total.carbs += alimento.carbo100g * multiplicador;
-      total.fat += alimento.gordura100g * multiplicador;
-      total.fiber += alimento.fibra100g * multiplicador;
+    if (match) {
+      const weight = customWeight || food.defaultWeight || 100;
+      const multiplier = weight / 100;
+
+      total.calories += food.calories * multiplier;
+      total.protein += food.protein * multiplier;
+      total.carbs += food.carbs * multiplier;
+      total.fat += food.fat * multiplier;
+      total.fiber += food.fiber * multiplier;
 
       foodsFound.push({
-        name: nome,
-        weight: peso
+        name: food.name,
+        weight
       });
     }
   }
 
-  if (foodsFound.length === 0) return null;
+  if (foodsFound.length === 0) {
+    return null;
+  }
 
   return {
-    ...total,
+    calories: Math.round(total.calories),
+    protein: Math.round(total.protein),
+    carbs: Math.round(total.carbs),
+    fat: Math.round(total.fat * 100) / 100,
+    fiber: Math.round(total.fiber),
     foods: foodsFound,
     totalWeight: foodsFound.reduce((acc, f) => acc + f.weight, 0)
   };
