@@ -9,6 +9,9 @@ import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
 
+// ✅ NOVO IMPORT DO CALCULADOR
+import calcularNutricao from './api/nutritionCalculator.js'
+
 const app = express()
 const PORT = process.env.PORT || 8080
 
@@ -28,9 +31,35 @@ app.post('/api/register', registerHandler)
 app.get('/api/progress', progressHandler)
 app.post('/api/progress', progressHandler)
 
-// ✅ ROTA CORRETA DE TASKS (AGORA USA O HANDLER REAL)
 app.get('/api/tasks/:dia', tasksHandler)
 
+// ==============================
+// ===== NOVA ROTA NUTRICIONAL =====
+// ==============================
+
+app.post('/api/calcular-manual', (req, res) => {
+  try {
+    const { descricao, peso } = req.body
+
+    if (!descricao) {
+      return res.status(400).json({
+        error: 'Descrição do prato é obrigatória'
+      })
+    }
+
+    const resultado = calcularNutricao(descricao, peso)
+
+    if (resultado.erro) {
+      return res.status(404).json(resultado)
+    }
+
+    res.json(resultado)
+
+  } catch (err) {
+    console.error('[API Nutrição]', err)
+    res.status(500).json({ error: 'Erro interno no servidor' })
+  }
+})
 
 // ==============================
 // ===== FRONTEND (SPA) =====

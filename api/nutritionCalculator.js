@@ -1,15 +1,17 @@
-const tabelaAlimentos = require("./nutritionTable");
+// api/nutritionCalculator.js
 
-// 🔍 Busca inteligente (aceita nome parcial)
+import tabelaAlimentos from "./nutritionTable.js";
+
+// 🔍 Busca inteligente (exata + parcial)
 function encontrarAlimento(nomePrato) {
   const nome = nomePrato.toLowerCase().trim();
 
-  // 1️⃣ Busca exata
+  // Busca exata
   if (tabelaAlimentos[nome]) {
     return tabelaAlimentos[nome];
   }
 
-  // 2️⃣ Busca parcial (ex: "coxinha" encontra "coxinha de frango")
+  // Busca parcial
   const chaveEncontrada = Object.keys(tabelaAlimentos).find(alimento =>
     alimento.includes(nome)
   );
@@ -21,28 +23,23 @@ function encontrarAlimento(nomePrato) {
   return null;
 }
 
-// 🧮 Função principal de cálculo
+// 🧮 Cálculo nutricional
 function calcularNutricao(nomePrato, pesoInformado = null) {
 
   const alimento = encontrarAlimento(nomePrato);
 
-  // ❌ Caso não encontre
   if (!alimento) {
     return {
       erro: "Alimento não encontrado na base interna."
     };
   }
 
-  // Se usuário não informar peso → usa peso padrão
   const pesoFinal = pesoInformado || alimento.pesoPadrao;
-
-  // Fator proporcional
   const fator = pesoFinal / 100;
 
   return {
     nome: nomePrato,
     peso: pesoFinal,
-
     calorias: Math.round(alimento.calorias100g * fator),
     proteinas: Math.round(alimento.proteina100g * fator),
     carboidratos: Math.round(alimento.carbo100g * fator),
@@ -51,4 +48,4 @@ function calcularNutricao(nomePrato, pesoInformado = null) {
   };
 }
 
-module.exports = calcularNutricao;
+export default calcularNutricao;
