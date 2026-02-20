@@ -68,20 +68,19 @@ function CalorieAnalysis() {
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.error || data.erro || 'Erro ao calcular');
+                setError(data.error || 'Erro ao calcular');
                 setAnalyzing(false);
                 return;
             }
 
             setResult({
-                foodName: data.nome,
-                calories: data.calorias,
-                protein: data.proteinas,
-                carbs: data.carboidratos,
-                fat: data.gorduras,
-                fiber: data.fibras,
-                portions: `${data.peso}g`,
-                confidence: 100
+                foodName: data.foods.map(f => f.name).join(', '),
+                calories: data.calories,
+                protein: data.protein,
+                carbs: data.carbs,
+                fat: data.fat,
+                fiber: data.fiber,
+                portions: `${data.totalWeight}g`
             });
 
         } catch (err) {
@@ -168,7 +167,7 @@ function CalorieAnalysis() {
 
                                         <input
                                             type="text"
-                                            placeholder="Ex: coxinha de frango"
+                                            placeholder="Ex: arroz feijao carne"
                                             value={descricao}
                                             onChange={(e) => setDescricao(e.target.value)}
                                             className="analysis-input"
