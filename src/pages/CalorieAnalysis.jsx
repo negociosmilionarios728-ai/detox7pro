@@ -20,10 +20,14 @@ import './CalorieAnalysis.css';
 
 function CalorieAnalysis() {
     const navigate = useNavigate();
+
     const [selectedImage, setSelectedImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [descricao, setDescricao] = useState('');
+    const [peso, setPeso] = useState('');
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState(null);
+    const [error, setError] = useState('');
 
     const handleImageSelect = (e) => {
         const file = e.target.files[0];
@@ -31,7 +35,6 @@ function CalorieAnalysis() {
             setSelectedImage(file);
             setResult(null);
 
-            // Criar preview da imagem
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result);
@@ -41,81 +44,60 @@ function CalorieAnalysis() {
     };
 
     const analyzeImage = async () => {
-        if (!selectedImage) {
-            alert('Por favor, selecione uma imagem primeiro');
+        if (!descricao) {
+            setError('Digite o nome do prato.');
             return;
         }
 
+        setError('');
         setAnalyzing(true);
+        setResult(null);
 
-        // Simular análise de IA (em produção, você usaria uma API real como Google Vision, Clarifai, ou um modelo próprio)
-        setTimeout(() => {
-            // Simulação de resultado baseado em análise de imagem
-            const mockResults = [
-                {
-                    foodName: 'Arroz com Feijão e Frango Grelhado',
-                    calories: 520,
-                    protein: 35,
-                    carbs: 65,
-                    fat: 12,
-                    fiber: 8,
-                    portions: 'Porção média (350g)',
-                    confidence: 85
+        try {
+            const response = await fetch('/api/calcular-manual', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                {
-                    foodName: 'Salada Verde com Atum',
-                    calories: 280,
-                    protein: 28,
-                    carbs: 15,
-                    fat: 14,
-                    fiber: 6,
-                    portions: 'Porção grande (300g)',
-                    confidence: 90
-                },
-                {
-                    foodName: 'Macarrão com Molho de Tomate',
-                    calories: 450,
-                    protein: 15,
-                    carbs: 75,
-                    fat: 10,
-                    fiber: 5,
-                    portions: 'Porção média (400g)',
-                    confidence: 88
-                },
-                {
-                    foodName: 'Hambúrguer com Batata Frita',
-                    calories: 850,
-                    protein: 32,
-                    carbs: 85,
-                    fat: 42,
-                    fiber: 4,
-                    portions: 'Porção grande (500g)',
-                    confidence: 82
-                },
-                {
-                    foodName: 'Smoothie de Frutas',
-                    calories: 220,
-                    protein: 8,
-                    carbs: 45,
-                    fat: 3,
-                    fiber: 7,
-                    portions: 'Copo grande (400ml)',
-                    confidence: 92
-                }
-            ];
+                body: JSON.stringify({
+                    descricao,
+                    peso: peso ? Number(peso) : null
+                })
+            });
 
-            // Selecionar resultado aleatório para demonstração
-            const randomResult = mockResults[Math.floor(Math.random() * mockResults.length)];
+            const data = await response.json();
 
-            setResult(randomResult);
-            setAnalyzing(false);
-        }, 2000);
+            if (!response.ok) {
+                setError(data.error || data.erro || 'Erro ao calcular');
+                setAnalyzing(false);
+                return;
+            }
+
+            setResult({
+                foodName: data.nome,
+                calories: data.calorias,
+                protein: data.proteinas,
+                carbs: data.carboidratos,
+                fat: data.gorduras,
+                fiber: data.fibras,
+                portions: `${data.peso}g`,
+                confidence: 100
+            });
+
+        } catch (err) {
+            setError('Erro ao conectar com o servidor.');
+        }
+
+        setAnalyzing(false);
     };
 
     const resetAnalysis = () => {
         setSelectedImage(null);
         setImagePreview(null);
         setResult(null);
+        setDescricao('');
+        setPeso('');
+        setError('');
     };
 
     return (
@@ -132,28 +114,23 @@ function CalorieAnalysis() {
             <main className="analysis-main">
                 <div className="container">
                     <div className="analysis-title-section fade-in">
-                        <div className="flex-center" style={{ justifyContent: 'center', marginBottom: '16px' }}>
-                            <Camera size={40} color="var(--primary-green)" />
-                        </div>
+                        <Camera size={40} color="var(--primary-green)" />
                         <h1>Análise de Calorias</h1>
-                        <p>Tire uma foto do seu prato e descubra quantas calorias tem!</p>
+                        <p>Envie uma foto e digite o nome do prato para calcular as calorias</p>
                     </div>
 
                     <div className="analysis-content">
+
                         {!imagePreview ? (
                             <div className="upload-section card">
-                                <div className="upload-icon-wrapper">
-                                    <Utensils className="upload-icon" size={48} />
-                                </div>
+                                <Utensils size={48} />
                                 <h2>Envie uma Foto do Seu Prato</h2>
-                                <p className="upload-description">
-                                    Nossa IA analisará a imagem e estimará as calorias e informações nutricionais
-                                </p>
 
                                 <label htmlFor="image-upload" className="btn btn-primary upload-btn">
                                     <Camera size={20} style={{ marginRight: '8px' }} />
                                     Selecionar Foto
                                 </label>
+
                                 <input
                                     type="file"
                                     id="image-upload"
@@ -164,22 +141,21 @@ function CalorieAnalysis() {
 
                                 <div className="upload-tips">
                                     <h4>
-                                        <Lightbulb size={18} style={{ marginRight: '8px', color: '#f59e0b' }} />
-                                        Dicas para melhores resultados:
+                                        <Lightbulb size={18} style={{ marginRight: '8px' }} />
+                                        Dicas:
                                     </h4>
                                     <ul>
-                                        <li>Tire a foto de cima, mostrando todo o prato</li>
-                                        <li>Use boa iluminação</li>
-                                        <li>Evite sombras sobre a comida</li>
-                                        <li>Mostre claramente todos os alimentos</li>
+                                        <li>Boa iluminação</li>
+                                        <li>Mostre todo o prato</li>
+                                        <li>Evite sombras</li>
                                     </ul>
                                 </div>
                             </div>
                         ) : (
                             <div className="analysis-section">
+
                                 <div className="image-preview-card card">
-                                    <h3>Sua Foto</h3>
-                                    <img src={imagePreview} alt="Prato selecionado" className="preview-image" />
+                                    <img src={imagePreview} alt="Preview" className="preview-image" />
                                     <button className="btn btn-ghost" onClick={resetAnalysis}>
                                         <RefreshCw size={16} style={{ marginRight: '8px' }} />
                                         Trocar Foto
@@ -188,11 +164,28 @@ function CalorieAnalysis() {
 
                                 {!result ? (
                                     <div className="analyze-card card">
-                                        <div className="analyze-icon-wrapper">
-                                            <Bot className="analyze-icon" size={48} />
-                                        </div>
-                                        <h3>Pronto para Analisar!</h3>
-                                        <p>Nossa IA está pronta para analisar sua refeição</p>
+                                        <Bot size={40} />
+
+                                        <input
+                                            type="text"
+                                            placeholder="Ex: coxinha de frango"
+                                            value={descricao}
+                                            onChange={(e) => setDescricao(e.target.value)}
+                                            className="analysis-input"
+                                        />
+
+                                        <input
+                                            type="number"
+                                            placeholder="Peso em gramas (opcional)"
+                                            value={peso}
+                                            onChange={(e) => setPeso(e.target.value)}
+                                            className="analysis-input"
+                                        />
+
+                                        {error && (
+                                            <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>
+                                        )}
+
                                         <button
                                             className="btn btn-primary analyze-btn"
                                             onClick={analyzeImage}
@@ -201,32 +194,32 @@ function CalorieAnalysis() {
                                             {analyzing ? (
                                                 <>
                                                     <Loader2 className="spinner-small" size={20} />
-                                                    Analisando...
+                                                    Calculando...
                                                 </>
                                             ) : (
                                                 <>
                                                     <Search size={20} style={{ marginRight: '8px' }} />
-                                                    Analisar Calorias
+                                                    Calcular Calorias
                                                 </>
                                             )}
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="results-card card fade-in">
+
                                         <div className="result-header">
                                             <h3>
                                                 <BarChart2 size={24} style={{ marginRight: '10px', color: 'var(--primary-green)' }} />
                                                 Resultado da Análise
                                             </h3>
                                             <span className="confidence-badge badge badge-success">
-                                                {result.confidence}% de confiança
+                                                100% base interna
                                             </span>
                                         </div>
 
                                         <div className="food-identified">
-                                            <h4>Prato Identificado:</h4>
-                                            <p className="food-name">{result.foodName}</p>
-                                            <p className="portions">{result.portions}</p>
+                                            <h4>{result.foodName}</h4>
+                                            <p>{result.portions}</p>
                                         </div>
 
                                         <div className="calories-highlight">
@@ -236,51 +229,45 @@ function CalorieAnalysis() {
 
                                         <div className="nutrition-grid">
                                             <div className="nutrition-item">
-                                                <div className="nutrition-icon-wrapper">
-                                                    <Dumbbell className="nutrition-icon" size={24} />
-                                                </div>
-                                                <div className="nutrition-value">{result.protein}g</div>
-                                                <div className="nutrition-label">Proteínas</div>
+                                                <Dumbbell size={24} />
+                                                <div>{result.protein}g</div>
+                                                <span>Proteínas</span>
                                             </div>
                                             <div className="nutrition-item">
-                                                <div className="nutrition-icon-wrapper">
-                                                    <Wheat className="nutrition-icon" size={24} />
-                                                </div>
-                                                <div className="nutrition-value">{result.carbs}g</div>
-                                                <div className="nutrition-label">Carboidratos</div>
+                                                <Wheat size={24} />
+                                                <div>{result.carbs}g</div>
+                                                <span>Carboidratos</span>
                                             </div>
                                             <div className="nutrition-item">
-                                                <div className="nutrition-icon-wrapper">
-                                                    <Droplet className="nutrition-icon" size={24} />
-                                                </div>
-                                                <div className="nutrition-value">{result.fat}g</div>
-                                                <div className="nutrition-label">Gorduras</div>
+                                                <Droplet size={24} />
+                                                <div>{result.fat}g</div>
+                                                <span>Gorduras</span>
                                             </div>
                                             <div className="nutrition-item">
-                                                <div className="nutrition-icon-wrapper">
-                                                    <Sprout className="nutrition-icon" size={24} />
-                                                </div>
-                                                <div className="nutrition-value">{result.fiber}g</div>
-                                                <div className="nutrition-label">Fibras</div>
+                                                <Sprout size={24} />
+                                                <div>{result.fiber}g</div>
+                                                <span>Fibras</span>
                                             </div>
                                         </div>
 
                                         <div className="result-disclaimer">
-                                            <p>
-                                                <AlertTriangle size={16} style={{ marginRight: '6px', display: 'inline', verticalAlign: 'text-bottom', color: '#f59e0b' }} />
-                                                <strong>Nota:</strong> Esta é uma estimativa baseada em análise de imagem.
-                                                Os valores podem variar dependendo dos ingredientes e modo de preparo.
-                                            </p>
+                                            <AlertTriangle size={16} />
+                                            <span>
+                                                Valores baseados em média nutricional padrão.
+                                            </span>
                                         </div>
 
                                         <button className="btn btn-primary" onClick={resetAnalysis}>
                                             <Camera size={20} style={{ marginRight: '8px' }} />
                                             Analisar Outro Prato
                                         </button>
+
                                     </div>
                                 )}
+
                             </div>
                         )}
+
                     </div>
                 </div>
             </main>
