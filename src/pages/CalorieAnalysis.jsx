@@ -23,7 +23,7 @@ function CalorieAnalysis() {
   const [error, setError] = useState('');
 
   const analyzeMeal = async () => {
-    if (!descricao) {
+    if (!descricao.trim()) {
       setError('Digite o nome do prato.');
       return;
     }
@@ -37,7 +37,7 @@ function CalorieAnalysis() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          descricao,
+          descricao: descricao.trim(),
           peso: peso ? Number(peso) : null
         })
       });
@@ -89,7 +89,21 @@ function CalorieAnalysis() {
       <main className="analysis-main">
         <div className="container">
 
+          {/* 🔥 ÍCONE DE ANÁLISE */}
           <div className="analysis-title-section fade-in">
+            <div style={{
+              background: 'var(--primary-green-light)',
+              width: '70px',
+              height: '70px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px auto'
+            }}>
+              <BarChart2 size={32} color="var(--primary-green)" />
+            </div>
+
             <h1>Análise de Calorias</h1>
             <p>Digite o nome do prato para calcular as calorias</p>
           </div>
