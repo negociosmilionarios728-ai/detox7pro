@@ -6,7 +6,8 @@ import {
   LogOut,
   ClipboardList,
   Salad,
-  BarChart2
+  BarChart2,
+  BookOpen
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -88,10 +89,13 @@ export default function Dashboard() {
           <Leaf size={20} />
           <span>DETOX 7PRO</span>
         </div>
-        <button className="logout-btn" onClick={() => {
-          logout();
-          navigate('/login');
-        }}>
+        <button
+          className="logout-btn"
+          onClick={() => {
+            logout();
+            navigate('/login');
+          }}
+        >
           <LogOut size={16}/> Sair
         </button>
       </header>
@@ -138,22 +142,41 @@ export default function Dashboard() {
 
         <div className="cards-grid">
 
-          <div className="action-card" onClick={() => navigate(`/tarefa/${diaAtual}`)}>
+          <div
+            className="action-card"
+            onClick={() => navigate(`/tarefa/${diaAtual}`)}
+          >
             <ClipboardList size={28}/>
             <h3>Tarefa de Hoje</h3>
             <p>Veja sua tarefa diária</p>
           </div>
 
-          <div className="action-card" onClick={() => navigate('/receitas')}>
+          <div
+            className="action-card"
+            onClick={() => navigate('/receitas')}
+          >
             <Salad size={28}/>
             <h3>Receitas</h3>
             <p>Explore receitas detox</p>
           </div>
 
-          <div className="action-card" onClick={() => navigate('/analise-calorias')}>
+          <div
+            className="action-card"
+            onClick={() => navigate('/analise-calorias')}
+          >
             <BarChart2 size={28}/>
             <h3>Análise de Calorias</h3>
             <p>Calcule calorias e nutrientes</p>
+          </div>
+
+          {/* 🔥 NOVO CARD EBOOK */}
+          <div
+            className="action-card"
+            onClick={() => navigate('/ebook')}
+          >
+            <BookOpen size={28}/>
+            <h3>Ebook</h3>
+            <p>Com mais de 70 receitas</p>
           </div>
 
         </div>
