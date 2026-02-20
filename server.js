@@ -8,8 +8,6 @@ import progressHandler from './api/progress.js'
 import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
-
-// ⚠️ IMPORT CORRETO (verifique se o nome do arquivo está exatamente assim)
 import { calculateMeal } from './api/NutritionCalculator.js'
 
 const app = express()
@@ -22,6 +20,13 @@ app.use(cors())
 app.use(express.json())
 
 // ==============================
+// ===== SERVIR EBOOK (STATIC) =====
+// ==============================
+
+// 🔥 Isso faz o Railway servir arquivos da pasta public/ebook
+app.use('/ebook', express.static(path.join(__dirname, 'public/ebook')))
+
+// ==============================
 // ===== ROTAS DA API =====
 // ==============================
 
@@ -32,10 +37,6 @@ app.get('/api/progress', progressHandler)
 app.post('/api/progress', progressHandler)
 
 app.get('/api/tasks/:dia', tasksHandler)
-
-// ==============================
-// ===== ROTA NUTRICIONAL =====
-// ==============================
 
 app.post('/api/calcular-manual', (req, res) => {
   try {
@@ -66,12 +67,14 @@ app.post('/api/calcular-manual', (req, res) => {
 })
 
 // ==============================
-// ===== FRONTEND (SPA) =====
+// ===== FRONTEND (SPA VITE) =====
 // ==============================
 
+// 🔥 Serve o build do Vite
 app.use(express.static(path.join(__dirname, 'dist')))
 
-app.use((req, res) => {
+// 🔥 Mantém funcionamento de rotas do React Router
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
