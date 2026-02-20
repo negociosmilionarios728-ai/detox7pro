@@ -5,12 +5,14 @@ import './Login.css';
 
 function Login() {
     const { login, register } = useAuth();
+
     const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         nome: '',
         email: '',
         senha: ''
     });
+
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -30,6 +32,7 @@ function Login() {
 
         try {
             let result;
+
             if (isLogin) {
                 result = await login(formData.email, formData.senha);
             } else {
@@ -38,12 +41,17 @@ function Login() {
                     setLoading(false);
                     return;
                 }
-                result = await register(formData.nome, formData.email, formData.senha);
+                result = await register(
+                    formData.nome,
+                    formData.email,
+                    formData.senha
+                );
             }
 
             if (!result.success) {
                 setError(result.error);
             }
+
         } catch (err) {
             setError('Erro ao processar sua solicitação');
         } finally {
@@ -58,6 +66,7 @@ function Login() {
         }
 
         setLoading(true);
+
         try {
             const response = await fetch('/api/forgot-password', {
                 method: 'POST',
@@ -66,8 +75,14 @@ function Login() {
             });
 
             const data = await response.json();
-            alert(data.message || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.');
+
+            alert(
+                data.message ||
+                'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.'
+            );
+
             setShowForgotPassword(false);
+
         } catch (err) {
             setError('Erro ao processar solicitação');
         } finally {
@@ -77,28 +92,27 @@ function Login() {
 
     return (
         <div className="login-container">
-            <div className="login-card card card-glass fade-in">
-                <div className="login-header">
-                    <div className="logo">
-                        <span className="logo-icon">
-                            <Leaf size={40} color="var(--primary-green)" />
-                        </span>
-                        <h1>DETOX 7PRO</h1>
-                    </div>
-                    <p className="tagline">Transforme sua saúde em 30 dias</p>
+
+            <div className="login-card">
+
+                <div className="login-logo">
+                    <Leaf size={36} />
+                    <span>DETOX 7PRO</span>
                 </div>
 
+                <p className="login-subtitle">
+                    Transforme sua saúde em 30 dias
+                </p>
+
                 {showForgotPassword ? (
-                    <div className="forgot-password-form">
-                        <h2>Recuperar Senha</h2>
-                        <p className="text-muted mb-3">
-                            Digite seu email para receber instruções de recuperação
-                        </p>
+
+                    <>
+                        <h3>Recuperar Senha</h3>
+
                         <div className="input-group">
-                            <label htmlFor="email">Email</label>
+                            <label>Email</label>
                             <input
                                 type="email"
-                                id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
@@ -106,14 +120,17 @@ function Login() {
                                 required
                             />
                         </div>
+
                         {error && <p className="error-message">{error}</p>}
+
                         <button
-                            className="btn btn-primary"
+                            className="login-button"
                             onClick={handleForgotPassword}
                             disabled={loading}
                         >
                             {loading ? 'Enviando...' : 'Enviar Instruções'}
                         </button>
+
                         <button
                             className="btn btn-ghost mt-2"
                             onClick={() => {
@@ -123,13 +140,16 @@ function Login() {
                         >
                             Voltar ao Login
                         </button>
-                    </div>
+                    </>
+
                 ) : (
+
                     <form onSubmit={handleSubmit}>
-                        <div className="form-toggle">
+
+                        <div className="login-tabs">
                             <button
                                 type="button"
-                                className={`toggle-btn ${isLogin ? 'active' : ''}`}
+                                className={`login-tab ${isLogin ? 'active' : ''}`}
                                 onClick={() => {
                                     setIsLogin(true);
                                     setError('');
@@ -137,9 +157,10 @@ function Login() {
                             >
                                 Entrar
                             </button>
+
                             <button
                                 type="button"
-                                className={`toggle-btn ${!isLogin ? 'active' : ''}`}
+                                className={`login-tab ${!isLogin ? 'active' : ''}`}
                                 onClick={() => {
                                     setIsLogin(false);
                                     setError('');
@@ -151,10 +172,9 @@ function Login() {
 
                         {!isLogin && (
                             <div className="input-group">
-                                <label htmlFor="nome">Nome Completo</label>
+                                <label>Nome Completo</label>
                                 <input
                                     type="text"
-                                    id="nome"
                                     name="nome"
                                     value={formData.nome}
                                     onChange={handleChange}
@@ -165,10 +185,9 @@ function Login() {
                         )}
 
                         <div className="input-group">
-                            <label htmlFor="email">Email</label>
+                            <label>Email</label>
                             <input
                                 type="email"
-                                id="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
@@ -178,10 +197,9 @@ function Login() {
                         </div>
 
                         <div className="input-group">
-                            <label htmlFor="senha">Senha</label>
+                            <label>Senha</label>
                             <input
                                 type="password"
-                                id="senha"
                                 name="senha"
                                 value={formData.senha}
                                 onChange={handleChange}
@@ -195,30 +213,33 @@ function Login() {
 
                         <button
                             type="submit"
-                            className="btn btn-primary"
+                            className="login-button"
                             disabled={loading}
                         >
-                            {loading ? 'Processando...' : (isLogin ? 'Entrar' : 'Criar Conta')}
+                            {loading
+                                ? 'Processando...'
+                                : isLogin
+                                    ? 'Entrar'
+                                    : 'Criar Conta'}
                         </button>
 
                         {isLogin && (
-                            <button
-                                type="button"
-                                className="btn btn-ghost mt-2"
+                            <div
+                                className="forgot-password"
                                 onClick={() => setShowForgotPassword(true)}
                             >
                                 Esqueci minha senha
-                            </button>
+                            </div>
                         )}
                     </form>
+
                 )}
 
                 <div className="login-footer">
-                    <p className="motivation-text">
-                        <Dumbbell size={16} style={{ marginRight: '6px', display: 'inline', verticalAlign: 'text-bottom' }} />
-                        Seu corpo merece o melhor. Comece hoje!
-                    </p>
+                    <Dumbbell size={16} style={{ marginRight: 6 }} />
+                    Seu corpo merece o melhor. Comece hoje!
                 </div>
+
             </div>
         </div>
     );
