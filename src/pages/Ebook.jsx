@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen } from 'lucide-react';
-import capaEbook from '../assets/capa-ebook.png';
 import './Ebook.css';
 
 function Ebook() {
@@ -38,9 +37,10 @@ function Ebook() {
 
                 <div className="ebook-card">
 
+                    {/* IMPORTANTE: SEM import, usando public */}
                     <img
-                        src={capaEbook}
-                        alt="70 Receitas Saudáveis para Revigorar o Corpo"
+                        src="/ebook/capa-ebook.png"
+                        alt="70 Receitas Saudáveis"
                         className="ebook-cover"
                     />
 
