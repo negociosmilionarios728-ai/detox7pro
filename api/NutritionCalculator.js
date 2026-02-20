@@ -1,4 +1,4 @@
-import { nutritionTable } from './NutritionTable.js';
+import { nutritionTable } from './nutritionTable.js';
 
 // ==============================
 // Normalizador de texto
