@@ -9,8 +9,8 @@ import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
 
-// ✅ NOVO IMPORT DO CALCULADOR
-import { tabelaAlimentos } from './api/NutritionData.js'
+// ✅ IMPORT CORRETO DO CALCULADOR
+import { calculateMeal } from './api/nutritionCalculator.js'
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -34,7 +34,7 @@ app.post('/api/progress', progressHandler)
 app.get('/api/tasks/:dia', tasksHandler)
 
 // ==============================
-// ===== NOVA ROTA NUTRICIONAL =====
+// ===== ROTA NUTRICIONAL =====
 // ==============================
 
 app.post('/api/calcular-manual', (req, res) => {
@@ -47,10 +47,12 @@ app.post('/api/calcular-manual', (req, res) => {
       })
     }
 
-    const resultado = calcularNutricao(descricao, peso)
+    const resultado = calculateMeal(descricao, peso)
 
-    if (resultado.erro) {
-      return res.status(404).json(resultado)
+    if (!resultado) {
+      return res.status(404).json({
+        error: 'Alimento não encontrado na base interna'
+      })
     }
 
     res.json(resultado)
@@ -67,7 +69,6 @@ app.post('/api/calcular-manual', (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'dist')))
 
-// SPA fallback
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
