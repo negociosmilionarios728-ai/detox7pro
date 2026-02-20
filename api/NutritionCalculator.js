@@ -1,3 +1,14 @@
+import { nutritionTable } from './NutritionTable.js'
+
+// ===== FUNÇÃO NORMALIZE =====
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// ===== FUNÇÃO PRINCIPAL =====
 export function calculateMeal(description, customWeight) {
   if (!description) return null;
 
@@ -16,12 +27,10 @@ export function calculateMeal(description, customWeight) {
   for (const food of nutritionTable) {
     const foodName = normalize(food.name);
 
-    // Divide nome do alimento em palavras
     const foodWords = foodName
-  .split(" ")
-  .filter(word => word.length > 2);
+      .split(" ")
+      .filter(word => word.length > 2);
 
-    // Verifica se alguma palavra do alimento está na descrição
     const match = foodWords.some(word =>
       normalized.includes(word)
     );
