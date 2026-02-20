@@ -73,17 +73,19 @@ function CalorieAnalysis() {
                 return;
             }
 
+            // 🔥 Ajustado para o formato real do backend
             setResult({
-                foodName: data.foods.map(f => f.name).join(', '),
-                calories: data.calories,
-                protein: data.protein,
-                carbs: data.carbs,
-                fat: data.fat,
-                fiber: data.fiber,
-                portions: `${data.totalWeight}g`
+                foodName: data.nome,
+                calories: data.calorias,
+                protein: data.proteinas,
+                carbs: data.carboidratos,
+                fat: data.gorduras,
+                fiber: data.fibras,
+                portions: `${data.peso}g`
             });
 
         } catch (err) {
+            console.error(err);
             setError('Erro ao conectar com o servidor.');
         }
 
