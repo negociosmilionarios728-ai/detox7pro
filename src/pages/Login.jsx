@@ -15,7 +15,6 @@ function Login() {
 
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [showForgotPassword, setShowForgotPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({
@@ -27,8 +26,8 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
+        setError('');
 
         try {
             let result;
@@ -36,11 +35,6 @@ function Login() {
             if (isLogin) {
                 result = await login(formData.email, formData.senha);
             } else {
-                if (!formData.nome) {
-                    setError('Por favor, preencha seu nome');
-                    setLoading(false);
-                    return;
-                }
                 result = await register(
                     formData.nome,
                     formData.email,
@@ -51,39 +45,7 @@ function Login() {
             if (!result.success) {
                 setError(result.error);
             }
-
-        } catch (err) {
-            setError('Erro ao processar sua solicitação');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleForgotPassword = async () => {
-        if (!formData.email) {
-            setError('Por favor, digite seu email primeiro');
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const response = await fetch('/api/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: formData.email })
-            });
-
-            const data = await response.json();
-
-            alert(
-                data.message ||
-                'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.'
-            );
-
-            setShowForgotPassword(false);
-
-        } catch (err) {
+        } catch {
             setError('Erro ao processar solicitação');
         } finally {
             setLoading(false);
@@ -91,153 +53,96 @@ function Login() {
     };
 
     return (
-        <div className="login-container">
+        <div className="login-wrapper">
+            <div className="login-box">
 
-            <div className="login-card">
-
-                <div className="login-logo">
-                    <Leaf size={36} />
-                    <span>DETOX 7PRO</span>
+                <div className="login-top">
+                    <Leaf size={34} />
+                    <h1>DETOX 7PRO</h1>
                 </div>
 
                 <p className="login-subtitle">
                     Transforme sua saúde em 30 dias
                 </p>
 
-                {showForgotPassword ? (
+                <div className="login-tabs">
+                    <button
+                        type="button"
+                        className={isLogin ? 'active' : ''}
+                        onClick={() => setIsLogin(true)}
+                    >
+                        Entrar
+                    </button>
+                    <button
+                        type="button"
+                        className={!isLogin ? 'active' : ''}
+                        onClick={() => setIsLogin(false)}
+                    >
+                        Criar Conta
+                    </button>
+                </div>
 
-                    <>
-                        <h3>Recuperar Senha</h3>
+                <form onSubmit={handleSubmit}>
 
-                        <div className="input-group">
-                            <label>Email</label>
+                    {!isLogin && (
+                        <div className="form-group">
+                            <label>Nome Completo</label>
                             <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
+                                type="text"
+                                name="nome"
+                                value={formData.nome}
                                 onChange={handleChange}
-                                placeholder="seu@email.com"
+                                placeholder="Seu nome"
                                 required
                             />
                         </div>
+                    )}
 
-                        {error && <p className="error-message">{error}</p>}
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="seu@email.com"
+                            required
+                        />
+                    </div>
 
-                        <button
-                            className="login-button"
-                            onClick={handleForgotPassword}
-                            disabled={loading}
-                        >
-                            {loading ? 'Enviando...' : 'Enviar Instruções'}
-                        </button>
+                    <div className="form-group">
+                        <label>Senha</label>
+                        <input
+                            type="password"
+                            name="senha"
+                            value={formData.senha}
+                            onChange={handleChange}
+                            placeholder="Mínimo 6 caracteres"
+                            required
+                            minLength="6"
+                        />
+                    </div>
 
-                        <button
-                            className="btn btn-ghost mt-2"
-                            onClick={() => {
-                                setShowForgotPassword(false);
-                                setError('');
-                            }}
-                        >
-                            Voltar ao Login
-                        </button>
-                    </>
+                    {error && <p className="error-text">{error}</p>}
 
-                ) : (
+                    <button
+                        type="submit"
+                        className="login-submit"
+                        disabled={loading}
+                    >
+                        {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar Conta'}
+                    </button>
 
-                    <form onSubmit={handleSubmit}>
-
-                        <div className="login-tabs">
-                            <button
-                                type="button"
-                                className={`login-tab ${isLogin ? 'active' : ''}`}
-                                onClick={() => {
-                                    setIsLogin(true);
-                                    setError('');
-                                }}
-                            >
-                                Entrar
-                            </button>
-
-                            <button
-                                type="button"
-                                className={`login-tab ${!isLogin ? 'active' : ''}`}
-                                onClick={() => {
-                                    setIsLogin(false);
-                                    setError('');
-                                }}
-                            >
-                                Criar Conta
-                            </button>
+                    {isLogin && (
+                        <div className="forgot-link">
+                            Esqueci minha senha
                         </div>
+                    )}
+                </form>
 
-                        {!isLogin && (
-                            <div className="input-group">
-                                <label>Nome Completo</label>
-                                <input
-                                    type="text"
-                                    name="nome"
-                                    value={formData.nome}
-                                    onChange={handleChange}
-                                    placeholder="Seu nome"
-                                    required={!isLogin}
-                                />
-                            </div>
-                        )}
-
-                        <div className="input-group">
-                            <label>Email</label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="seu@email.com"
-                                required
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label>Senha</label>
-                            <input
-                                type="password"
-                                name="senha"
-                                value={formData.senha}
-                                onChange={handleChange}
-                                placeholder="Mínimo 6 caracteres"
-                                required
-                                minLength="6"
-                            />
-                        </div>
-
-                        {error && <p className="error-message">{error}</p>}
-
-                        <button
-                            type="submit"
-                            className="login-button"
-                            disabled={loading}
-                        >
-                            {loading
-                                ? 'Processando...'
-                                : isLogin
-                                    ? 'Entrar'
-                                    : 'Criar Conta'}
-                        </button>
-
-                        {isLogin && (
-                            <div
-                                className="forgot-password"
-                                onClick={() => setShowForgotPassword(true)}
-                            >
-                                Esqueci minha senha
-                            </div>
-                        )}
-                    </form>
-
-                )}
-
-                <div className="login-footer">
-                    <Dumbbell size={16} style={{ marginRight: 6 }} />
-                    Seu corpo merece o melhor. Comece hoje!
+                <div className="login-bottom">
+                    <Dumbbell size={16} />
+                    <span>Seu corpo merece o melhor. Comece hoje!</span>
                 </div>
 
             </div>
