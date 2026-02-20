@@ -9,7 +9,7 @@ import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
 
-// ✅ IMPORT CORRETO DO CALCULADOR
+// ⚠️ IMPORT CORRETO (verifique se o nome do arquivo está exatamente assim)
 import { calculateMeal } from './api/NutritionCalculator.js'
 
 const app = express()
@@ -55,11 +55,13 @@ app.post('/api/calcular-manual', (req, res) => {
       })
     }
 
-    res.json(resultado)
+    return res.json(resultado)
 
   } catch (err) {
-    console.error('[API Nutrição]', err)
-    res.status(500).json({ error: 'Erro interno no servidor' })
+    console.error('❌ [API Nutrição]', err)
+    return res.status(500).json({
+      error: 'Erro interno no servidor'
+    })
   }
 })
 
@@ -72,6 +74,10 @@ app.use(express.static(path.join(__dirname, 'dist')))
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
+
+// ==============================
+// ===== START SERVER =====
+// ==============================
 
 app.listen(PORT, () => {
   console.log(`🚀 Server rodando na porta ${PORT}`)
