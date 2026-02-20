@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookOpen } from 'lucide-react';
+import capaEbook from '../assets/capa-ebook.png';
 import './Ebook.css';
 
 function Ebook() {
@@ -8,11 +9,6 @@ function Ebook() {
 
     const handleOpenPDF = () => {
         window.open('/ebook/ebook-detox7pro.pdf', '_blank');
-    };
-
-    const handleImageError = (e) => {
-        console.error('Erro ao carregar capa do ebook');
-        e.target.style.display = 'none';
     };
 
     return (
@@ -43,10 +39,9 @@ function Ebook() {
                 <div className="ebook-card">
 
                     <img
-                        src="/ebook/capa-ebook.png"
+                        src={capaEbook}
                         alt="70 Receitas Saudáveis para Revigorar o Corpo"
                         className="ebook-cover"
-                        onError={handleImageError}
                     />
 
                     <div className="ebook-info">
