@@ -1,3 +1,5 @@
+import { tabelaAlimentos } from './NutritionData.js';
+
 export const nutritionTable = Object.entries(tabelaAlimentos).map(
   ([name, data]) => ({
     name,
