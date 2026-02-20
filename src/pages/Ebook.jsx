@@ -10,18 +10,29 @@ function Ebook() {
         window.open('/ebook/ebook-detox7pro.pdf', '_blank');
     };
 
+    const handleImageError = (e) => {
+        console.error('Erro ao carregar capa do ebook');
+        e.target.style.display = 'none';
+    };
+
     return (
         <div className="ebook-container">
 
             <header className="ebook-header">
-                <button className="back-button" onClick={() => navigate('/dashboard')}>
+                <button
+                    className="back-button"
+                    onClick={() => navigate('/dashboard')}
+                >
                     <ArrowLeft size={20} />
                     Voltar
                 </button>
 
                 <h1>70 Receitas Saudáveis</h1>
 
-                <button className="btn-open-header" onClick={handleOpenPDF}>
+                <button
+                    className="btn-open-header"
+                    onClick={handleOpenPDF}
+                >
                     <BookOpen size={18} />
                     Abrir Ebook
                 </button>
@@ -35,13 +46,22 @@ function Ebook() {
                         src="/ebook/capa-ebook.png"
                         alt="70 Receitas Saudáveis para Revigorar o Corpo"
                         className="ebook-cover"
+                        onError={handleImageError}
                     />
 
                     <div className="ebook-info">
-                        <h2>70 Receitas Saudáveis para Revigorar o Corpo</h2>
-                        <p>Com mais de 70 receitas leves, nutritivas e fáceis de preparar.</p>
+                        <h2>
+                            70 Receitas Saudáveis para Revigorar o Corpo
+                        </h2>
 
-                        <button className="btn-primary-ebook" onClick={handleOpenPDF}>
+                        <p>
+                            Com mais de 70 receitas leves, nutritivas e fáceis de preparar.
+                        </p>
+
+                        <button
+                            className="btn-primary-ebook"
+                            onClick={handleOpenPDF}
+                        >
                             <BookOpen size={18} />
                             Abrir Ebook
                         </button>
