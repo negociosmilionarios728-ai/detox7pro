@@ -10,7 +10,7 @@ import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
 
 // ✅ NOVO IMPORT DO CALCULADOR
-import calcularNutricao from './api/nutritionCalculator.js'
+import calcularNutricao from './api/NutritionData.js'
 
 const app = express()
 const PORT = process.env.PORT || 8080
