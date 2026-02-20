@@ -1,11 +1,11 @@
 /* ===== LOGIN CONTAINER ===== */
 .login-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #a7d7c5 0%, #bfe3d3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
 }
 
 /* ===== CARD ===== */
@@ -19,29 +19,10 @@
   animation: fadeInUp 0.6s ease-out;
 }
 
-/* ===== LOGO ===== */
-.login-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 26px;
-  font-weight: 700;
-  color: #059669;
-  margin-bottom: 8px;
-}
-
-.login-subtitle {
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 24px;
-}
-
 /* ===== TABS ===== */
 .login-tabs {
   display: flex;
-  background: #f3f4f6;
+  background: #e5e7eb;
   border-radius: 10px;
   margin-bottom: 24px;
   overflow: hidden;
@@ -55,18 +36,12 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: 0.2s ease;
 }
 
 .login-tab.active {
   background: white;
   color: #059669;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* ===== FORM ===== */
-.login-card form {
-  margin-top: 10px;
 }
 
 /* ===== BUTTON ===== */
@@ -80,28 +55,10 @@
   width: 100%;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s ease;
 }
 
 .login-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* ===== LINKS ===== */
-.forgot-password {
-  margin-top: 14px;
-  font-size: 13px;
-  color: #059669;
-  text-align: center;
-  cursor: pointer;
-}
-
-.login-footer {
-  margin-top: 24px;
-  font-size: 13px;
-  color: #059669;
-  text-align: center;
+  opacity: 0.9;
 }
 
 /* ===== ANIMATION ===== */
@@ -113,12 +70,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* ===== RESPONSIVO ===== */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 30px 20px;
   }
 }
