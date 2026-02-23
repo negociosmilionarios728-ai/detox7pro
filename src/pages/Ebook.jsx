@@ -24,14 +24,6 @@ function Ebook() {
                 </button>
 
                 <h1>70 Receitas Saudáveis</h1>
-
-                <button
-                    className="btn-open-header"
-                    onClick={handleOpenPDF}
-                >
-                    <BookOpen size={18} />
-                    Abrir Ebook
-                </button>
             </header>
 
             <main className="ebook-content">
