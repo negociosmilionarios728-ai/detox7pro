@@ -78,21 +78,54 @@ export default function DailyTask() {
     }
   };
 
-  if (erro) {
-    return (
-      <h2 className="center-message">{erro}</h2>
+  // 🔥 Renderização profissional do exercício
+  const renderExercise = () => {
+    if (!tarefa.exercise) {
+      return <p>Exercício não informado.</p>;
+    }
+
+    const linhas = tarefa.exercise.split("\n").filter(l => l.trim() !== "");
+
+    const titulo = linhas[0];
+    const listaItens = linhas
+      .filter(l => l.trim().startsWith("-"))
+      .map(l => l.replace("-", "").trim());
+
+    const textoNormal = linhas.filter(
+      l => !l.trim().startsWith("-") && l !== titulo
     );
+
+    return (
+      <div className="exercise-content">
+        <h3 className="exercise-title">{titulo}</h3>
+
+        {textoNormal.map((linha, index) => (
+          <p key={index} className="exercise-text">
+            {linha}
+          </p>
+        ))}
+
+        {listaItens.length > 0 && (
+          <ul className="exercise-list">
+            {listaItens.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  };
+
+  if (erro) {
+    return <h2 className="center-message">{erro}</h2>;
   }
 
   if (!tarefa) {
-    return (
-      <h2 className="center-message">Carregando...</h2>
-    );
+    return <h2 className="center-message">Carregando...</h2>;
   }
 
   return (
     <div className="daily-task-container">
-
       <div className="task-main">
 
         {/* 🔝 Top Bar */}
@@ -114,15 +147,16 @@ export default function DailyTask() {
 
         <div className="task-content">
 
+          {/* 🔥 Exercício Profissional */}
           <div className="card exercise-card">
             <div className="card-header">
               <h2>Exercício do Dia</h2>
             </div>
-            <p className="exercise-description">
-              {tarefa.exercise || "Exercício não informado."}
-            </p>
+
+            {renderExercise()}
           </div>
 
+          {/* 🍃 Receita */}
           <div className="card recipe-card">
             <div className="card-header">
               <h2>Receita Detox</h2>
@@ -146,7 +180,6 @@ export default function DailyTask() {
               <h4>Benefícios</h4>
               <p>{tarefa.benefits || "Não informado."}</p>
             </div>
-
           </div>
 
         </div>
