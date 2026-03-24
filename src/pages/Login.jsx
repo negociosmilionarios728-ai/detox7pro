@@ -133,11 +133,6 @@ function Login() {
                         {loading ? 'Processando...' : isLogin ? 'Entrar' : 'Criar Conta'}
                     </button>
 
-                    {isLogin && (
-                        <div className="forgot-link">
-                            Esqueci minha senha
-                        </div>
-                    )}
                 </form>
 
                 <div className="login-bottom">
