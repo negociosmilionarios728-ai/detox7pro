@@ -37,6 +37,7 @@ async function initDB() {
 }
 initDB();
 
+// (no changes needed to server.js regarding the secret itself as it doesn't use it directly)
 const app = express()
 const PORT = process.env.PORT || 8080
 
