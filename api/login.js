@@ -1,15 +1,6 @@
-import pg from 'pg';
+import pool from '../db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-const { Pool } = pg;
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
 
 const JWT_SECRET = process.env.JWT_SECRET || 'detox7pro-secret-2024';
 

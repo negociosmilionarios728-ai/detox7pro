@@ -1,17 +1,7 @@
-import pg from 'pg';
+import pool from '../db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-
-const { Pool } = pg;
-
-// Pool de conexão com o Postgres (Railway)
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
 
 const JWT_SECRET = process.env.JWT_SECRET || 'detox7pro-secret-2024';
 
