@@ -102,6 +102,6 @@ export default async function progressHandler(req, res) {
     res.status(405).end();
   } catch (err) {
     console.error('[API Progress]', err);
-    res.status(500).json({ error: 'Erro interno' });
+    res.status(500).json({ error: 'Erro dB: ' + err.message + ' | Stack: ' + String(err.stack).substring(0,200) });
   }
 }
