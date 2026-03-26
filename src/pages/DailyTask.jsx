@@ -28,7 +28,7 @@ export default function DailyTask() {
         const data = await res.json();
         setTarefa(data);
 
-        const progressoRes = await fetch("/api/progress", {
+        const progressoRes = await fetch(`/api/progress?t=${Date.now()}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 

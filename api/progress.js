@@ -28,7 +28,7 @@ export default async function progressHandler(req, res) {
         const newProgress = await pool.query(
           `
           INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
-          VALUES ($1, 1, '{}', NOW())
+          VALUES ($1, 1, '[]', NOW())
           RETURNING current_day, completed_days, started_at
           `,
           [userId]
@@ -59,7 +59,7 @@ export default async function progressHandler(req, res) {
         await pool.query(
           `
           INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
-          VALUES ($1, 1, '{}', NOW())
+          VALUES ($1, 1, '[]', NOW())
           `,
           [userId]
         );
@@ -93,7 +93,7 @@ export default async function progressHandler(req, res) {
             current_day = $2
         WHERE user_id = $3
         `,
-        [completedDays, nextDay, userId]
+        [JSON.stringify(completedDays), nextDay, userId]
       );
 
       return res.json({ success: true });

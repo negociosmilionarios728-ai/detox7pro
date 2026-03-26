@@ -52,7 +52,7 @@ export default function Dashboard() {
 
   const carregarProgresso = async () => {
     try {
-      const response = await fetch('/api/progress', {
+      const response = await fetch(`/api/progress?t=${Date.now()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
