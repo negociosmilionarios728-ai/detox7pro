@@ -54,17 +54,14 @@ export default async function handler(req, res) {
     // Gerar hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Gerar UUID nativo do Node (sem dependências externas)
-    const userId = crypto.randomUUID();
-
-    // Inserir usuário (COLUNAS CERTAS DA SUA TABELA)
+    // Inserir usuário (Deixe o banco gerar o ID SERIAL automaticamente)
     const result = await pool.query(
       `
-      INSERT INTO users (id, full_name, email, password_hash, has_paid_calories)
-      VALUES ($1, $2, $3, $4, false)
+      INSERT INTO users (full_name, email, password_hash, has_paid_calories)
+      VALUES ($1, $2, $3, false)
       RETURNING id, full_name, email, has_paid_calories
       `,
-      [userId, nome, email, senhaHash]
+      [nome, email, senhaHash]
     );
 
     const user = result.rows[0];

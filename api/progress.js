@@ -10,7 +10,8 @@ export default async function progressHandler(req, res) {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const JWT_SECRET = process.env.JWT_SECRET || 'detox7pro-secret-2024';
+    const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.id;
 
     if (req.method === 'GET') {
@@ -90,7 +91,9 @@ export default async function progressHandler(req, res) {
         `
         UPDATE user_progress
         SET completed_days = $1,
-            current_day = $2
+            current_day = $2,
+            last_completed_at = NOW(),
+            last_updated = NOW()
         WHERE user_id = $3
         `,
         [JSON.stringify(completedDays), nextDay, userId]

@@ -77,7 +77,8 @@ export default function DailyTask() {
       setMensagem("Tarefa concluída com sucesso!");
 
     } catch (e) {
-      setMensagem(e.message || "Erro ao marcar como concluída.");
+      console.error("Erro ao concluir tarefa:", e);
+      setMensagem(e.message || "Erro de conexão com o servidor.");
     } finally {
       setLoadingConclusao(false);
     }

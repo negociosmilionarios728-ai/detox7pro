@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     // Buscar usuário pelo email
     const result = await pool.query(
-      'SELECT id, name, email, password, has_paid_calories FROM users WHERE email = $1',
+      'SELECT id, full_name, email, password_hash, has_paid_calories FROM users WHERE email = $1',
       [email]
     );
 
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     const user = result.rows[0];
 
     // Comparar senha digitada com hash salvo
-    const senhaValida = await bcrypt.compare(senha, user.password);
+    const senhaValida = await bcrypt.compare(senha, user.password_hash);
 
     if (!senhaValida) {
       return res.status(401).json({
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       token,
       user: {
         id: user.id,
-        nome: user.name,
+        nome: user.full_name,
         email: user.email,
         has_paid_calories: user.has_paid_calories,
       },
