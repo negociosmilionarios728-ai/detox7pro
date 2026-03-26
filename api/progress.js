@@ -13,15 +13,13 @@ export default async function progressHandler(req, res) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    // =========================
-    // GET
-    // =========================
     if (req.method === 'GET') {
       const result = await pool.query(
         `
-        SELECT current_day, completed_days, started_at
-        FROM user_progress
-        WHERE user_id = $1
+        SELECT p.current_day, p.completed_days, p.started_at, u.has_paid_calories
+        FROM user_progress p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.user_id = $1
         `,
         [userId]
       );

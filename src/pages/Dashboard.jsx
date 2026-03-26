@@ -24,7 +24,7 @@ const motivationalQuotes = [
 ];
 
 export default function Dashboard() {
-  const { user, logout, token, loading: authLoading } = useAuth();
+  const { user, logout, token, loading: authLoading, setUser } = useAuth();
   const navigate = useNavigate();
 
   const [progresso, setProgresso] = useState({
@@ -59,6 +59,12 @@ export default function Dashboard() {
       if (!response.ok) throw new Error();
 
       const data = await response.json();
+
+      if (data.has_paid_calories && user && !user.has_paid_calories) {
+        const updatedUser = { ...user, has_paid_calories: true };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
 
       setProgresso({
         completed_days: data.completed_days || [],

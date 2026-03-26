@@ -130,7 +130,8 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         authHeaders,
-        isAuthenticated: !!token
+        isAuthenticated: !!token,
+        setUser
       }}
     >
       {children}
