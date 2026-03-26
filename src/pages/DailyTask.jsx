@@ -39,6 +39,14 @@ export default function DailyTask() {
           if (diasConcluidos.includes(Number(dia))) {
             setConcluido(true);
           }
+
+          if (progresso.last_completed_at) {
+            const lastDate = new Date(progresso.last_completed_at).toLocaleDateString('pt-BR');
+            const today = new Date().toLocaleDateString('pt-BR');
+            if (lastDate === today && !diasConcluidos.includes(Number(dia))) {
+               setErro("Você já concluiu uma tarefa hoje! Volte amanhã para liberar a próxima.");
+            }
+          }
         }
 
       } catch {
@@ -66,13 +74,16 @@ export default function DailyTask() {
         body: JSON.stringify({ dia: Number(dia) })
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "");
+      }
 
       setConcluido(true);
-      setMensagem("Tarefa concluída com sucesso!");
+      setMensagem("Tarefa concluída com sucesso! A próxima será liberada amanhã.");
 
-    } catch {
-      setMensagem("Erro ao marcar como concluída.");
+    } catch (e) {
+      setMensagem(e.message || "Erro ao marcar como concluída.");
     } finally {
       setLoadingConclusao(false);
     }

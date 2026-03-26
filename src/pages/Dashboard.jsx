@@ -29,7 +29,8 @@ export default function Dashboard() {
 
   const [progresso, setProgresso] = useState({
     completed_days: [],
-    current_day: 1
+    current_day: 1,
+    last_completed_at: null
   });
 
   const [loading, setLoading] = useState(true);
@@ -61,13 +62,15 @@ export default function Dashboard() {
 
       setProgresso({
         completed_days: data.completed_days || [],
-        current_day: data.current_day || 1
+        current_day: data.current_day || 1,
+        last_completed_at: data.last_completed_at || null
       });
 
     } catch {
       setProgresso({
         completed_days: [],
-        current_day: 1
+        current_day: 1,
+        last_completed_at: null
       });
     } finally {
       setLoading(false);
@@ -81,6 +84,13 @@ export default function Dashboard() {
   const diasConcluidos = progresso.completed_days;
   const diaAtual = progresso.current_day;
   const porcentagem = (diasConcluidos.length / 30) * 100;
+
+  const isCompletedToday = () => {
+    if (!progresso.last_completed_at) return false;
+    const lastDate = new Date(progresso.last_completed_at).toLocaleDateString('pt-BR');
+    const today = new Date().toLocaleDateString('pt-BR');
+    return lastDate === today;
+  };
 
   return (
     <div className="dashboard-wrapper">
@@ -145,11 +155,18 @@ export default function Dashboard() {
 
           <div
             className="action-card"
-            onClick={() => navigate(`/tarefa/${diaAtual}`)}
+            style={isCompletedToday() ? { opacity: 0.6 } : {}}
+            onClick={() => {
+              if (isCompletedToday()) {
+                alert("Você já completou a tarefa de hoje! Próxima tarefa será liberada amanhã.");
+              } else {
+                navigate(`/tarefa/${diaAtual}`);
+              }
+            }}
           >
             <ClipboardList size={28}/>
             <h3>Tarefa de Hoje</h3>
-            <p>Veja sua tarefa diária</p>
+            <p>{isCompletedToday() ? "Concluída - Volte amanhã" : "Veja sua tarefa diária"}</p>
           </div>
 
           <div
