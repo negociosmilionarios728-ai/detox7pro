@@ -163,21 +163,23 @@ export default function Dashboard() {
 
           <div
             className="action-card"
+            style={!user?.has_paid_calories ? { position: 'relative' } : {}}
             onClick={() => {
               if (user?.has_paid_calories) {
                 navigate('/analise-calorias');
               } else {
-                window.open('https://pay.kiwify.com.br/INSERIR_LINK_AQUI', '_blank');
+                window.open('https://zuckpay.com.br/checkout/analise-de-calorias', '_blank');
               }
             }}
           >
-            {user?.has_paid_calories ? <BarChart2 size={28}/> : <Lock size={28} color="#FF5252" />}
+            {!user?.has_paid_calories && (
+              <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
+                <Lock size={24} color="#FF5252" />
+              </div>
+            )}
+            <BarChart2 size={28}/>
             <h3>Análise de Calorias</h3>
-            <p>
-              {user?.has_paid_calories
-                ? 'Calcule calorias e nutrientes'
-                : 'Bloqueado - Clique para liberar acesso'}
-            </p>
+            <p>Calcule calorias e nutrientes</p>
           </div>
 
           {/* 🔥 NOVO CARD EBOOK */}
