@@ -1,0 +1,28 @@
+﻿users columns: [
+  {
+    column_name: 'created_at',
+    data_type: 'timestamp without time zone'
+  },
+  {
+    column_name: 'updated_at',
+    data_type: 'timestamp without time zone'
+  },
+  { column_name: 'has_paid_calories', data_type: 'boolean' },
+  { column_name: 'id', data_type: 'integer' },
+  { column_name: 'password_hash', data_type: 'character varying' },
+  { column_name: 'full_name', data_type: 'character varying' },
+  { column_name: 'email', data_type: 'character varying' }
+]
+user_progress columns: [
+  { column_name: 'user_id', data_type: 'integer' },
+  { column_name: 'completed_days', data_type: 'jsonb' },
+  { column_name: 'current_day', data_type: 'integer' },
+  {
+    column_name: 'last_updated',
+    data_type: 'timestamp without time zone'
+  },
+  {
+    column_name: 'last_completed_at',
+    data_type: 'timestamp with time zone'
+  }
+]

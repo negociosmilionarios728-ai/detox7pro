@@ -16,7 +16,7 @@ export default async function progressHandler(req, res) {
     if (req.method === 'GET') {
       const result = await pool.query(
         `
-        SELECT p.current_day, p.completed_days, p.started_at, u.has_paid_calories
+        SELECT p.current_day, p.completed_days, u.has_paid_calories
         FROM user_progress p
         JOIN users u ON p.user_id = u.id
         WHERE p.user_id = $1
@@ -27,9 +27,9 @@ export default async function progressHandler(req, res) {
       if (result.rows.length === 0) {
         const newProgress = await pool.query(
           `
-          INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
-          VALUES ($1, 1, '[]', NOW())
-          RETURNING current_day, completed_days, started_at
+          INSERT INTO user_progress (user_id, current_day, completed_days)
+          VALUES ($1, 1, '[]')
+          RETURNING current_day, completed_days
           `,
           [userId]
         );
@@ -58,8 +58,8 @@ export default async function progressHandler(req, res) {
       if (result.rows.length === 0) {
         await pool.query(
           `
-          INSERT INTO user_progress (user_id, current_day, completed_days, started_at)
-          VALUES ($1, 1, '[]', NOW())
+          INSERT INTO user_progress (user_id, current_day, completed_days)
+          VALUES ($1, 1, '[]')
           `,
           [userId]
         );
