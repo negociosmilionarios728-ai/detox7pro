@@ -72,6 +72,24 @@ app.post('/api/webhook/zuckpay', zuckpayWebhookHandler)
 
 app.get('/api/tasks/:dia', tasksHandler)
 
+// 🔧 DEBUG ENDPOINT - Temporário para verificar schema do Railway
+app.get('/api/debug-schema', async (req, res) => {
+  try {
+    const users = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position");
+    const progress = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'user_progress' ORDER BY ordinal_position");
+    const tasks = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tasks' ORDER BY ordinal_position");
+    res.json({
+      users: users.rows,
+      user_progress: progress.rows,
+      tasks: tasks.rows,
+      db_url_set: !!process.env.DATABASE_URL,
+      jwt_secret_set: !!process.env.JWT_SECRET
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+})
+
 app.post('/api/calcular-manual', (req, res) => {
   try {
     const { descricao, peso } = req.body
