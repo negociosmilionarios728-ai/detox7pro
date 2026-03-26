@@ -19,7 +19,7 @@ export default async function progressHandler(req, res) {
     if (req.method === 'GET') {
       const result = await pool.query(
         `
-        SELECT current_day, completed_days, started_at, last_completed_at
+        SELECT current_day, completed_days, started_at
         FROM user_progress
         WHERE user_id = $1
         `,
@@ -69,7 +69,7 @@ export default async function progressHandler(req, res) {
 
       const updatedResult = await pool.query(
         `
-        SELECT current_day, completed_days, last_completed_at
+        SELECT current_day, completed_days
         FROM user_progress
         WHERE user_id = $1
         `,
@@ -92,8 +92,7 @@ export default async function progressHandler(req, res) {
         `
         UPDATE user_progress
         SET completed_days = $1,
-            current_day = $2,
-            last_completed_at = NOW()
+            current_day = $2
         WHERE user_id = $3
         `,
         [completedDays, nextDay, userId]
