@@ -213,3 +213,57 @@
     align-items: center;
   }
 }
+
+/* ================= LOCKED CARD BLUR ================= */
+
+.locked-blur-card {
+  border: 2px solid rgba(255, 82, 82, 0.4);
+  animation: pulse-border-red 2s infinite;
+}
+
+@keyframes pulse-border-red {
+  0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.blurred-content {
+  filter: blur(4px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.unlock-btn {
+  margin-top: 15px;
+  background: #FF5252;
+  color: white;
+  border: none;
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 82, 82, 0.4);
+  transition: all 0.3s;
+  z-index: 10;
+  width: 100%;
+  text-align: center;
+  animation: pulse-zoom 2s infinite;
+}
+
+@keyframes pulse-zoom {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.unlock-btn:hover {
+  background: #ff3333;
+}

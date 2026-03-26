@@ -179,7 +179,7 @@ export default function Dashboard() {
           </div>
 
           <div
-            className="action-card"
+            className={`action-card ${!user?.has_paid_calories ? 'locked-blur-card' : ''}`}
             style={!user?.has_paid_calories ? { position: 'relative' } : {}}
             onClick={() => {
               if (user?.has_paid_calories) {
@@ -190,13 +190,22 @@ export default function Dashboard() {
             }}
           >
             {!user?.has_paid_calories && (
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
                 <Lock size={24} color="#FF5252" />
               </div>
             )}
-            <BarChart2 size={28}/>
-            <h3>Análise de Calorias</h3>
-            <p>Calcule calorias e nutrientes</p>
+            
+            <div className={`card-content ${!user?.has_paid_calories ? 'blurred-content' : ''}`}>
+              <BarChart2 size={28}/>
+              <h3>Análise de Calorias</h3>
+              <p>Calcule calorias e nutrientes</p>
+            </div>
+
+            {!user?.has_paid_calories && (
+              <button className="unlock-btn">
+                Libere agora a calculadora de calorias
+              </button>
+            )}
           </div>
 
           {/* 🔥 NOVO CARD EBOOK */}
