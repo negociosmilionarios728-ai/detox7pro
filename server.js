@@ -9,6 +9,7 @@ import loginHandler from './api/login.js'
 import registerHandler from './api/register.js'
 import tasksHandler from './api/tasks.js'
 import { calculateMeal } from './api/NutritionCalculator.js'
+import zuckpayWebhookHandler from './api/webhook-zuckpay.js'
 
 const app = express()
 const PORT = process.env.PORT || 8080
@@ -39,6 +40,8 @@ app.post('/api/register', registerHandler)
 
 app.get('/api/progress', progressHandler)
 app.post('/api/progress', progressHandler)
+
+app.post('/api/webhook/zuckpay', zuckpayWebhookHandler)
 
 app.get('/api/tasks/:dia', tasksHandler)
 
