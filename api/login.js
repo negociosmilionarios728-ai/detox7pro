@@ -19,9 +19,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Buscar usuário pelo email
+    // Railway DB: colunas são id(uuid), name, email, password, has_paid_calories
     const result = await pool.query(
-      'SELECT id, full_name, email, password_hash, has_paid_calories FROM users WHERE email = $1',
+      'SELECT id, name, email, password, has_paid_calories FROM users WHERE email = $1',
       [email]
     );
 
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     const user = result.rows[0];
 
     // Comparar senha digitada com hash salvo
-    const senhaValida = await bcrypt.compare(senha, user.password_hash);
+    const senhaValida = await bcrypt.compare(senha, user.password);
 
     if (!senhaValida) {
       return res.status(401).json({
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       token,
       user: {
         id: user.id,
-        nome: user.full_name,
+        nome: user.name,
         email: user.email,
         has_paid_calories: user.has_paid_calories,
       },
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     console.error('[LOGIN] Erro:', error);
     return res.status(500).json({
       success: false,
-      message: 'Erro ao fazer login',
+      message: 'Erro ao fazer login: ' + error.message,
     });
   }
 }

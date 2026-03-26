@@ -44,14 +44,16 @@ export default async function handler(req, res) {
     // Gerar hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Inserir usuário (Deixe o banco gerar o ID SERIAL automaticamente)
+    // Railway DB: id é UUID, colunas são name, email, password
+    const userId = crypto.randomUUID();
+
     const result = await pool.query(
       `
-      INSERT INTO users (full_name, email, password_hash, has_paid_calories)
-      VALUES ($1, $2, $3, false)
-      RETURNING id, full_name, email, has_paid_calories
+      INSERT INTO users (id, name, email, password, has_paid_calories)
+      VALUES ($1, $2, $3, $4, false)
+      RETURNING id, name, email, has_paid_calories
       `,
-      [nome, email, senhaHash]
+      [userId, nome, email, senhaHash]
     );
 
     const user = result.rows[0];
@@ -68,7 +70,7 @@ export default async function handler(req, res) {
       token,
       user: {
         id: user.id,
-        nome: user.full_name,
+        nome: user.name,
         email: user.email,
         has_paid_calories: user.has_paid_calories,
       },
@@ -77,7 +79,7 @@ export default async function handler(req, res) {
     console.error('[REGISTER] Erro:', error);
     return res.status(500).json({
       success: false,
-      message: 'Erro ao criar conta',
+      message: 'Erro ao criar conta: ' + error.message,
     });
   }
 }

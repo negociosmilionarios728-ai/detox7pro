@@ -14,6 +14,8 @@ export default async function progressHandler(req, res) {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.id;
 
+    // Railway DB: user_id é UUID, completed_days é ARRAY (não JSONB)
+
     if (req.method === 'GET') {
       const result = await pool.query(
         `
@@ -26,10 +28,11 @@ export default async function progressHandler(req, res) {
       );
 
       if (result.rows.length === 0) {
+        // Criar progresso inicial
         const newProgress = await pool.query(
           `
-          INSERT INTO user_progress (user_id, current_day, completed_days)
-          VALUES ($1, 1, '[]')
+          INSERT INTO user_progress (id, user_id, current_day, completed_days)
+          VALUES (gen_random_uuid(), $1, 1, ARRAY[]::integer[])
           RETURNING current_day, completed_days
           `,
           [userId]
@@ -59,8 +62,8 @@ export default async function progressHandler(req, res) {
       if (result.rows.length === 0) {
         await pool.query(
           `
-          INSERT INTO user_progress (user_id, current_day, completed_days)
-          VALUES ($1, 1, '[]')
+          INSERT INTO user_progress (id, user_id, current_day, completed_days)
+          VALUES (gen_random_uuid(), $1, 1, ARRAY[]::integer[])
           `,
           [userId]
         );
@@ -87,21 +90,21 @@ export default async function progressHandler(req, res) {
 
       const nextDay = Math.max(...completedDays, 1) + 1;
 
+      // Railway DB: completed_days é ARRAY, não JSONB
       try {
         await pool.query(
           `
           UPDATE user_progress
           SET completed_days = $1,
               current_day = $2,
-              last_completed_at = NOW(),
-              last_updated = NOW()
+              last_completed_at = NOW()
           WHERE user_id = $3
           `,
-          [JSON.stringify(completedDays), nextDay, userId]
+          [completedDays, nextDay, userId]
         );
       } catch (updateErr) {
         console.error('[DATABASE UPDATE ERROR]', updateErr);
-        // Fallback para caso a coluna last_completed_at não exista
+        // Fallback sem last_completed_at
         await pool.query(
           `
           UPDATE user_progress
@@ -109,7 +112,7 @@ export default async function progressHandler(req, res) {
               current_day = $2
           WHERE user_id = $3
           `,
-          [JSON.stringify(completedDays), nextDay, userId]
+          [completedDays, nextDay, userId]
         );
       }
 
@@ -119,6 +122,6 @@ export default async function progressHandler(req, res) {
     res.status(405).end();
   } catch (err) {
     console.error('[API Progress]', err);
-    res.status(500).json({ error: 'Erro dB: ' + err.message + ' | Stack: ' + String(err.stack).substring(0,200) });
+    res.status(500).json({ error: 'Erro: ' + err.message });
   }
 }
