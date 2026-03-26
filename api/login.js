@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     // Buscar usuário pelo email
     const result = await pool.query(
-      'SELECT id, name, email, password FROM users WHERE email = $1',
+      'SELECT id, name, email, password, has_paid_calories FROM users WHERE email = $1',
       [email]
     );
 
@@ -67,6 +67,7 @@ export default async function handler(req, res) {
         id: user.id,
         nome: user.name,
         email: user.email,
+        has_paid_calories: user.has_paid_calories,
       },
     });
   } catch (error) {

@@ -60,9 +60,9 @@ export default async function handler(req, res) {
     // Inserir usuário (COLUNAS CERTAS DA SUA TABELA)
     const result = await pool.query(
       `
-      INSERT INTO users (id, name, email, password)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, name, email
+      INSERT INTO users (id, name, email, password, has_paid_calories)
+      VALUES ($1, $2, $3, $4, false)
+      RETURNING id, name, email, has_paid_calories
       `,
       [userId, nome, email, senhaHash]
     );
@@ -83,6 +83,7 @@ export default async function handler(req, res) {
         id: user.id,
         nome: user.name,
         email: user.email,
+        has_paid_calories: user.has_paid_calories,
       },
     });
   } catch (error) {

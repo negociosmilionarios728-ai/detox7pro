@@ -7,7 +7,8 @@ import {
   ClipboardList,
   Salad,
   BarChart2,
-  BookOpen
+  BookOpen,
+  Lock
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -162,11 +163,21 @@ export default function Dashboard() {
 
           <div
             className="action-card"
-            onClick={() => navigate('/analise-calorias')}
+            onClick={() => {
+              if (user?.has_paid_calories) {
+                navigate('/analise-calorias');
+              } else {
+                window.open('https://pay.kiwify.com.br/INSERIR_LINK_AQUI', '_blank');
+              }
+            }}
           >
-            <BarChart2 size={28}/>
+            {user?.has_paid_calories ? <BarChart2 size={28}/> : <Lock size={28} color="#FF5252" />}
             <h3>Análise de Calorias</h3>
-            <p>Calcule calorias e nutrientes</p>
+            <p>
+              {user?.has_paid_calories
+                ? 'Calcule calorias e nutrientes'
+                : 'Bloqueado - Clique para liberar acesso'}
+            </p>
           </div>
 
           {/* 🔥 NOVO CARD EBOOK */}
