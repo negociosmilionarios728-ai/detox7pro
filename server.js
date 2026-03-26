@@ -11,6 +11,32 @@ import tasksHandler from './api/tasks.js'
 import { calculateMeal } from './api/NutritionCalculator.js'
 import zuckpayWebhookHandler from './api/webhook-zuckpay.js'
 
+import pool from './db.js'
+
+// ===== AUTO-MIGRATE DB =====
+async function initDB() {
+  try {
+    console.log('🔄 Verificando esquema do banco de dados...')
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_progress (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        completed_days JSONB DEFAULT '[]',
+        current_day INTEGER DEFAULT 1,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    // Garantir que colunas novas existam
+    await pool.query('ALTER TABLE user_progress ADD COLUMN IF NOT EXISTS last_completed_at TIMESTAMP WITH TIME ZONE;');
+    await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS has_paid_calories BOOLEAN DEFAULT false;');
+    
+    console.log('✅ Banco de dados pronto!')
+  } catch (err) {
+    console.error('❌ Erro na migração automática:', err)
+  }
+}
+initDB();
+
 const app = express()
 const PORT = process.env.PORT || 8080
 

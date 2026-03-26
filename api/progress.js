@@ -87,17 +87,31 @@ export default async function progressHandler(req, res) {
 
       const nextDay = Math.max(...completedDays, 1) + 1;
 
-      await pool.query(
-        `
-        UPDATE user_progress
-        SET completed_days = $1,
-            current_day = $2,
-            last_completed_at = NOW(),
-            last_updated = NOW()
-        WHERE user_id = $3
-        `,
-        [JSON.stringify(completedDays), nextDay, userId]
-      );
+      try {
+        await pool.query(
+          `
+          UPDATE user_progress
+          SET completed_days = $1,
+              current_day = $2,
+              last_completed_at = NOW(),
+              last_updated = NOW()
+          WHERE user_id = $3
+          `,
+          [JSON.stringify(completedDays), nextDay, userId]
+        );
+      } catch (updateErr) {
+        console.error('[DATABASE UPDATE ERROR]', updateErr);
+        // Fallback para caso a coluna last_completed_at não exista
+        await pool.query(
+          `
+          UPDATE user_progress
+          SET completed_days = $1,
+              current_day = $2
+          WHERE user_id = $3
+          `,
+          [JSON.stringify(completedDays), nextDay, userId]
+        );
+      }
 
       return res.json({ success: true });
     }
