@@ -86,15 +86,6 @@ export default async function progressHandler(req, res) {
         completedDays.push(dia);
       }
 
-      // Verifica se já completou no mesmo dia
-      if (updatedResult.rows[0].last_completed_at) {
-        const lastDate = new Date(updatedResult.rows[0].last_completed_at).toLocaleDateString('pt-BR');
-        const today = new Date().toLocaleDateString('pt-BR');
-        if (lastDate === today) {
-          return res.status(403).json({ error: 'Uma tarefa já foi concluída hoje.' });
-        }
-      }
-
       const nextDay = Math.max(...completedDays, 1) + 1;
 
       await pool.query(

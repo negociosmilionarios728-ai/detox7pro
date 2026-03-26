@@ -85,12 +85,7 @@ export default function Dashboard() {
   const diaAtual = progresso.current_day;
   const porcentagem = (diasConcluidos.length / 30) * 100;
 
-  const isCompletedToday = () => {
-    if (!progresso.last_completed_at) return false;
-    const lastDate = new Date(progresso.last_completed_at).toLocaleDateString('pt-BR');
-    const today = new Date().toLocaleDateString('pt-BR');
-    return lastDate === today;
-  };
+
 
   return (
     <div className="dashboard-wrapper">
@@ -155,18 +150,13 @@ export default function Dashboard() {
 
           <div
             className="action-card"
-            style={isCompletedToday() ? { opacity: 0.6 } : {}}
             onClick={() => {
-              if (isCompletedToday()) {
-                alert("Você já completou a tarefa de hoje! Próxima tarefa será liberada amanhã.");
-              } else {
-                navigate(`/tarefa/${diaAtual}`);
-              }
+              navigate(`/tarefa/${diaAtual}`);
             }}
           >
             <ClipboardList size={28}/>
             <h3>Tarefa de Hoje</h3>
-            <p>{isCompletedToday() ? "Concluída - Volte amanhã" : "Veja sua tarefa diária"}</p>
+            <p>Veja sua tarefa diária</p>
           </div>
 
           <div
